@@ -1,3 +1,5 @@
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:pos_fiap_fin_mobile/utils/routes.dart';
 
@@ -9,16 +11,33 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  String? _errorMessage;
+  String _errorMessage = '';
 
   void _goToRegisterRoute() {
     Navigator.pushNamed(context, Routes.register);
   }
 
+  void _goToDashboard() {
+    Navigator.pushReplacementNamed(context, Routes.dashboard);
+  }
+
   void _login() {
-    // Implement login functionality
+    _auth
+        .signInWithEmailAndPassword(
+          email: _emailController.text,
+          password: _passwordController.text,
+        )
+        .then((userCredential) {
+          _goToDashboard();
+        })
+        .catchError((error) {
+          setState(() {
+            _errorMessage = error.message ?? 'Erro desconhecido';
+          });
+        });
   }
 
   @override
@@ -41,7 +60,7 @@ class _LoginScreenState extends State<LoginScreen> {
               obscureText: true,
               controller: _passwordController,
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 50),
             ElevatedButton(onPressed: _login, child: Text('Login')),
             TextButton(
               onPressed: _goToRegisterRoute,
