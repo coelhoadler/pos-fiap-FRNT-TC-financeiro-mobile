@@ -1,14 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:pos_fiap_fin_mobile/utils/routes.dart';
 
-class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
+class RegisterScreen extends StatefulWidget {
+  const RegisterScreen({super.key});
 
   @override
-  State<RegisterPage> createState() => _RegisterPageState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterPageState extends State<RegisterPage> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -24,7 +25,7 @@ class _RegisterPageState extends State<RegisterPage> {
           children: [
             TextField(
               controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
+              decoration: const InputDecoration(labelText: 'E-mail'),
             ),
             TextField(
               controller: _passwordController,
@@ -48,17 +49,25 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   void _register() async {
+    setState(() {
+      _errorMessage = "";
+    });
+
     try {
-      UserCredential userCredential = await _auth
-          .createUserWithEmailAndPassword(
-            email: _emailController.text,
-            password: _passwordController.text,
-          );
+      final textEmail = _emailController.text;
+      final textPassword = _passwordController.text;
+
+      await _auth.createUserWithEmailAndPassword(
+        email: textEmail,
+        password: textPassword,
+      );
+
+      Navigator.pop(context, textEmail);
       // Handle successful registration
     } on FirebaseAuthException catch (e) {
       // Handle registration error
       setState(() {
-        _errorMessage = e.message ?? 'Unknown error';
+        _errorMessage = e.message ?? 'Erro desconhecido';
       });
     }
   }

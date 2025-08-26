@@ -4,14 +4,14 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-class TransfersPage extends StatefulWidget {
-  const TransfersPage({super.key});
+class TransfersScreen extends StatefulWidget {
+  const TransfersScreen({super.key});
 
   @override
-  State<TransfersPage> createState() => _TransfersPageState();
+  State<TransfersScreen> createState() => _TransfersScreenState();
 }
 
-class _TransfersPageState extends State<TransfersPage> {
+class _TransfersScreenState extends State<TransfersScreen> {
   final ImagePicker _picker = ImagePicker();
 
   @override
