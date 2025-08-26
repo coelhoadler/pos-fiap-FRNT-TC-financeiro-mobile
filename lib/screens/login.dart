@@ -24,39 +24,50 @@ class _LoginScreenState extends State<LoginScreen> {
     Navigator.pushReplacementNamed(context, Routes.dashboard);
   }
 
-  void _login() {
-    _auth
-        .signInWithEmailAndPassword(
-          email: _emailController.text,
-          password: _passwordController.text,
-        )
-        .then((userCredential) {
-          _goToDashboard();
-        })
-        .catchError((error) {
-          setState(() {
-            _errorMessage = error.message ?? 'Erro desconhecido';
-          });
-        });
+  void setErrorMessage(String message) {
+    setState(() {
+      _errorMessage = message;
+    });
+  }
+
+  void _login() async {
+    setErrorMessage('');
+
+    try {
+      await _auth.signInWithEmailAndPassword(
+        email: _emailController.text,
+        password: _passwordController.text,
+      );
+
+      _goToDashboard();
+    } on FirebaseAuthException catch (e) {
+      setErrorMessage(e.message ?? 'Erro desconhecido');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    setErrorMessage('');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: Colors.green,
         title: const Text('Login Page'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: <Widget>[
-            TextField(
-              decoration: InputDecoration(labelText: 'E-mail'),
+            TextFormField(
+              decoration: InputDecoration(labelText: 'E-mail *'),
               controller: _emailController,
             ),
-            TextField(
-              decoration: InputDecoration(labelText: 'Password'),
+            TextFormField(
+              decoration: InputDecoration(labelText: 'Password *'),
               obscureText: true,
               controller: _passwordController,
             ),

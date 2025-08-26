@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:pos_fiap_fin_mobile/utils/routes.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -16,24 +15,36 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String _errorMessage = '';
 
   @override
+  void initState() {
+    super.initState();
+    setErrorMessage('');
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Register')),
+      appBar: AppBar(
+        title: Text('Criar uma conta'),
+        backgroundColor: Colors.green,
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             TextField(
               controller: _emailController,
-              decoration: const InputDecoration(labelText: 'E-mail'),
+              decoration: const InputDecoration(labelText: 'E-mail *'),
             ),
             TextField(
               controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
+              decoration: const InputDecoration(labelText: 'Password *'),
               obscureText: true,
             ),
             const SizedBox(height: 20),
-            ElevatedButton(onPressed: _register, child: const Text('Register')),
+            ElevatedButton(
+              onPressed: _register,
+              child: const Text('Criar conta'),
+            ),
             if (_errorMessage.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 16.0),
@@ -49,9 +60,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _register() async {
-    setState(() {
-      _errorMessage = "";
-    });
+    setErrorMessage('');
 
     try {
       final textEmail = _emailController.text;
@@ -63,12 +72,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
       );
 
       Navigator.pop(context, textEmail);
-      // Handle successful registration
     } on FirebaseAuthException catch (e) {
-      // Handle registration error
-      setState(() {
-        _errorMessage = e.message ?? 'Erro desconhecido';
-      });
+      setErrorMessage(e.message ?? 'Erro desconhecido');
     }
+  }
+
+  void setErrorMessage(String message) {
+    setState(() {
+      _errorMessage = message;
+    });
   }
 }
