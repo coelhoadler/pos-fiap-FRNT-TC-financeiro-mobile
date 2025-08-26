@@ -31,7 +31,7 @@ class _LoginPageState extends State<LoginPage> {
           children: <Widget>[
             const Text(
               'You have pushed the button this many times:',
-              style: TextStyle(fontSize: 100),
+              style: TextStyle(fontSize: 16),
             ),
             Text(
               '$_counter',
