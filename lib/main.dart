@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.red),
       ),
-      initialRoute: Routes.register,
+      initialRoute: Routes.login,
       routes: {
         Routes.login: (context) => const LoginPage(title: 'Login Page'),
         Routes.dashboard: (context) => const DashboardPage(),
