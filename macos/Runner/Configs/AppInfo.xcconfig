@@ -8,7 +8,7 @@
 PRODUCT_NAME = project
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.project
+PRODUCT_BUNDLE_IDENTIFIER = com.example.pos_fiap_fin_mobile
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2025 com.example. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2025 com.pos_fiap_fin_mobile. All rights reserved.
