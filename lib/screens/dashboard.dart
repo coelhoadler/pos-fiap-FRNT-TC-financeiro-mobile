@@ -36,7 +36,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         appBar: AppBar(
           backgroundColor: Colors.green,
           title: Text(
-            'Dashboard de transferências | ${_auth.currentUser?.email}',
+            'Dashboard de transferências | ${_auth.currentUser?.displayName}',
           ),
           actions: [
             IconButton(

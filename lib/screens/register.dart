@@ -11,14 +11,17 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   String _errorMessage = '';
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     setErrorMessage('');
+    _isLoading = false;
   }
 
   @override
@@ -33,21 +36,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: Column(
           children: [
             TextField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                labelText: 'Qual o seu nome? ',
+                hintText: 'Digite seu nome',
+              ),
+            ),
+            TextField(
               controller: _emailController,
               decoration: const InputDecoration(labelText: 'E-mail *'),
             ),
             PasswordInput(controller: _passwordController),
             const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _register,
-              child: const Text('Criar conta'),
-            ),
+            _isLoading
+                ? CircularProgressIndicator()
+                : ElevatedButton(
+                    onPressed: _register,
+                    child: Text('Criar minha conta'),
+                  ),
+            SizedBox(height: 20),
             if (_errorMessage.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 16.0),
+              Center(
                 child: Text(
                   _errorMessage,
-                  style: const TextStyle(color: Colors.red),
+                  style: TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
                 ),
               ),
           ],
@@ -58,6 +71,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   void _register() async {
     setErrorMessage('');
+    setState(() {
+      _isLoading = true;
+    });
 
     try {
       final textEmail = _emailController.text;
@@ -68,11 +84,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
         password: textPassword,
       );
 
+      User? user = FirebaseAuth.instance.currentUser;
+      await user?.updateDisplayName(
+        _nameController.text ?? 'Usuário desconhecido',
+      );
+
       await _auth.currentUser?.sendEmailVerification();
 
       Navigator.pop(context, textEmail);
     } on FirebaseAuthException catch (e) {
       setErrorMessage(e.message ?? 'Erro desconhecido');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
