@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:pos_fiap_fin_mobile/components/ui/inputs/password_input.dart';
 import 'package:pos_fiap_fin_mobile/utils/routes.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -14,6 +14,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+
   String _errorMessage = '';
 
   void _goToRegisterRoute() {
@@ -38,6 +39,9 @@ class _LoginScreenState extends State<LoginScreen> {
         email: _emailController.text,
         password: _passwordController.text,
       );
+
+      bool isVerified =
+          FirebaseAuth.instance.currentUser?.emailVerified ?? false;
 
       _goToDashboard();
     } on FirebaseAuthException catch (e) {
@@ -66,11 +70,7 @@ class _LoginScreenState extends State<LoginScreen> {
               decoration: InputDecoration(labelText: 'E-mail *'),
               controller: _emailController,
             ),
-            TextFormField(
-              decoration: InputDecoration(labelText: 'Password *'),
-              obscureText: true,
-              controller: _passwordController,
-            ),
+            PasswordInput(controller: _passwordController),
             SizedBox(height: 50),
             ElevatedButton(onPressed: _login, child: Text('Login')),
             TextButton(
