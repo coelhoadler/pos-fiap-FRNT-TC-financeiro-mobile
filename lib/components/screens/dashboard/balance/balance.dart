@@ -27,7 +27,7 @@ class _BalanceState extends State<Balance> {
       'Sábado',
       'Domingo',
     ];
-    return days[date.weekday - 1];
+    return days[date.weekday - 2];
   }
 
   @override
