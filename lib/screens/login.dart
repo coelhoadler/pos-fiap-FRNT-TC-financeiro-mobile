@@ -16,6 +16,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
 
   String _errorMessage = '';
+  bool _isLoading = false;
 
   void _goToRegisterRoute() {
     Navigator.pushNamed(context, Routes.register);
@@ -28,12 +29,15 @@ class _LoginScreenState extends State<LoginScreen> {
   void setErrorMessage(String message) {
     setState(() {
       _errorMessage = message;
+      _isLoading = false;
     });
   }
 
   void _login() async {
     setErrorMessage('');
-
+    setState(() {
+      _isLoading = true;
+    });
     try {
       await _auth.signInWithEmailAndPassword(
         email: _emailController.text,
@@ -46,6 +50,10 @@ class _LoginScreenState extends State<LoginScreen> {
       _goToDashboard();
     } on FirebaseAuthException catch (e) {
       setErrorMessage(e.message ?? 'Erro desconhecido');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -72,12 +80,21 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             PasswordInput(controller: _passwordController),
             SizedBox(height: 50),
-            ElevatedButton(onPressed: _login, child: Text('Login')),
+            _isLoading
+                ? CircularProgressIndicator()
+                : ElevatedButton(onPressed: _login, child: Text('Login')),
             TextButton(
               onPressed: _goToRegisterRoute,
               child: Text('Criar uma conta'),
             ),
-            Text(_errorMessage, style: TextStyle(color: Colors.red)),
+            if (_errorMessage.isNotEmpty)
+              Center(
+                child: Text(
+                  _errorMessage,
+                  style: TextStyle(color: Colors.red),
+                  textAlign: TextAlign.center,
+                ),
+              ),
           ],
         ),
       ),

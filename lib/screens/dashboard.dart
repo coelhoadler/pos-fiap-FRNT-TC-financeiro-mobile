@@ -1,7 +1,9 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:pos_fiap_fin_mobile/components/ui/header/header.dart';
 import 'package:pos_fiap_fin_mobile/utils/routes.dart';
+
+import '../components/screens/dashboard/balance/balance.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -27,21 +29,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Dashboard de transferências',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+    return Scaffold(
+      appBar: Header(
+        context: context,
+        displayName: _auth.currentUser?.displayName ?? 'Usuário Desconhecido',
       ),
-      home: Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.green,
-          title: Text(
-            'Dashboard de transferências | ${_auth.currentUser?.email}',
-          ),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.logout),
-              onPressed: () async {
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(color: Color(0xFF004D61)),
+              child: Text(
+                _auth.currentUser?.displayName ?? 'Usuário',
+                style: TextStyle(color: Colors.white, fontSize: 24),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.home),
+              title: Text('Transferências'),
+              onTap: () {
+                Navigator.pushNamed(context, Routes.transfers);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.logout),
+              title: Text('Sair'),
+              onTap: () async {
                 await _auth.signOut();
                 if (!mounted) return;
                 Navigator.pushReplacementNamed(context, Routes.login);
@@ -49,7 +63,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ),
           ],
         ),
-        body: Center(child: Text('Minhas transferências')),
+      ),
+      body: Container(
+        alignment: Alignment.topCenter,
+        child: Column(
+          children: [
+            Balance(nameUser: 'Joana', amount: 100.0, dateTime: DateTime.now()),
+            Text('Nova Transação'),
+          ],
+        ),
       ),
     );
   }
