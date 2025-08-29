@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:pos_fiap_fin_mobile/components/ui/inputs/password_input.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -35,11 +36,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               controller: _emailController,
               decoration: const InputDecoration(labelText: 'E-mail *'),
             ),
-            TextField(
-              controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Password *'),
-              obscureText: true,
-            ),
+            PasswordInput(controller: _passwordController),
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _register,
@@ -70,6 +67,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
         email: textEmail,
         password: textPassword,
       );
+
+      await _auth.currentUser?.sendEmailVerification();
 
       Navigator.pop(context, textEmail);
     } on FirebaseAuthException catch (e) {
