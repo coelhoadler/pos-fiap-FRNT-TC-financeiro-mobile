@@ -27,7 +27,7 @@ class _BalanceState extends State<Balance> {
       'Sábado',
       'Domingo',
     ];
-    return days[date.weekday - 2];
+    return days[date.weekday - 1];
   }
 
   @override
@@ -41,7 +41,10 @@ class _BalanceState extends State<Balance> {
       padding: const EdgeInsets.all(50),
       child: Column(
         children: [
-          Text("Olá, ${widget.nameUser}",style: TextStyle(fontSize: 26, color: Colors.white),),
+          Text(
+            "Olá, ${widget.nameUser}",
+            style: TextStyle(fontSize: 26, color: Colors.white),
+          ),
           SizedBox(height: 20),
           Text(
             '$dayOfWeek, $formattedDate',
@@ -53,10 +56,16 @@ class _BalanceState extends State<Balance> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(padding: EdgeInsets.only(top:10, bottom:10), child: Text("Saldo: ", style:TextStyle(fontSize: 20, color: Colors.white),)),
+                Padding(
+                  padding: EdgeInsets.only(top: 10, bottom: 10),
+                  child: Text(
+                    "Saldo: ",
+                    style: TextStyle(fontSize: 20, color: Colors.white),
+                  ),
+                ),
                 SizedBox(height: 2, child: Container(color: Colors.white)),
                 Padding(
-                  padding: EdgeInsets.only(top:10, bottom:10),
+                  padding: EdgeInsets.only(top: 10, bottom: 10),
                   child: Text(
                     'R\$ ${widget.amount.toStringAsFixed(2)}',
                     style: TextStyle(
