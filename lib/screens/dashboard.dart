@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:pos_fiap_fin_mobile/components/screens/dashboard/new_transfer/new_transfer.dart';
 import 'package:pos_fiap_fin_mobile/components/ui/header/header.dart';
 import 'package:pos_fiap_fin_mobile/utils/routes.dart';
 
@@ -64,13 +65,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
       ),
-      body: Container(
-        alignment: Alignment.topCenter,
-        child: Column(
-          children: [
-            Balance(nameUser: 'Joana', amount: 100.0, dateTime: DateTime.now()),
-            Text('Nova Transação'),
-          ],
+      body: SingleChildScrollView(
+        child: Container(
+          alignment: Alignment.topCenter,
+          child: Column(
+            children: [
+              Balance(
+                nameUser: _auth.currentUser?.displayName?.split(' ')[0] ?? '',
+                amount: 100.0,
+                dateTime: DateTime.now(),
+              ),
+              SizedBox(height: 5),
+              NewTransferScreen(),
+            ],
+          ),
         ),
       ),
     );

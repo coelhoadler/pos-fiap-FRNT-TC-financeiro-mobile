@@ -12,7 +12,7 @@ class Header extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: const Color(0xFF004D61),
       toolbarHeight: 80, // aumenta a altura do header
       leading: Container(
-        margin: const EdgeInsets.only(left: 25),
+        margin: const EdgeInsets.only(left: 8),
         child: Center(
           // garante que o ícone fique no centro vertical
           child: IconButton(
