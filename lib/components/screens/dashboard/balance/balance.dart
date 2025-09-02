@@ -17,15 +17,16 @@ class Balance extends StatefulWidget {
 }
 
 class _BalanceState extends State<Balance> {
+  bool _obscure = true;
   String getDayOfWeek(DateTime date) {
     const days = [
+      'Domingo',
       'Segunda-feira',
       'Terça-feira',
       'Quarta-feira',
       'Quinta-feira',
       'Sexta-feira',
       'Sábado',
-      'Domingo',
     ];
     return days[date.weekday - 1];
   }
@@ -58,20 +59,38 @@ class _BalanceState extends State<Balance> {
               children: [
                 Padding(
                   padding: EdgeInsets.only(top: 10, bottom: 10),
-                  child: Text(
-                    "Saldo: ",
-                    style: TextStyle(fontSize: 20, color: Colors.white),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          "Saldo",
+                          style: TextStyle(fontSize: 20, color: Colors.white),
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          _obscure ? Icons.visibility_off : Icons.visibility,
+                        ),
+                        color: Colors.white,
+                        onPressed: () {
+                          setState(() {
+                            _obscure = !_obscure;
+                          });
+                        },
+                      ),
+                    ],
                   ),
                 ),
                 SizedBox(height: 2, child: Container(color: Colors.white)),
                 Padding(
                   padding: EdgeInsets.only(top: 10, bottom: 10),
                   child: Text(
-                    'R\$ ${widget.amount.toStringAsFixed(2)}',
+                    _obscure ? '*******' : 'R\$ ${widget.amount.toStringAsFixed(2)}',
                     style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 22,
                       color: widget.amount >= 0 ? Colors.white : Colors.red,
+                      decoration: _obscure ? TextDecoration.lineThrough : null,
                     ),
                   ),
                 ),
