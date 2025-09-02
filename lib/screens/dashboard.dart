@@ -71,7 +71,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           child: Column(
             children: [
               Balance(
-                nameUser: _auth.currentUser?.displayName!.split(' ')[0] ?? '',
+                nameUser: _auth.currentUser?.displayName?.split(' ')[0] ?? '',
                 amount: 100.0,
                 dateTime: DateTime.now(),
               ),
