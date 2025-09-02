@@ -5,6 +5,7 @@ import 'package:pos_fiap_fin_mobile/components/ui/header/header.dart';
 import 'package:pos_fiap_fin_mobile/utils/routes.dart';
 
 import '../components/screens/dashboard/balance/balance.dart';
+import '../components/screens/dashboard/extract/extract.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -77,6 +78,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
               SizedBox(height: 5),
               NewTransferScreen(),
+              SizedBox(height: 20),
+              Extract(
+                nameTransaction: 'DOC/TED',
+                dateTransaction: DateTime.now(),
+                valueTransaction: 100.0,
+              ),  
             ],
           ),
         ),
