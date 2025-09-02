@@ -10,6 +10,7 @@ class NewTransferScreen extends StatefulWidget {
 
 class _NewTransferScreenState extends State<NewTransferScreen> {
   final TextEditingController _valueController = TextEditingController();
+  String selectedValue = 'Câmbio de moeda';
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +22,25 @@ class _NewTransferScreenState extends State<NewTransferScreen> {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               const ListTile(title: Text('Nova transação')),
+              DropdownButton<String>(
+                value: selectedValue,
+                items:
+                    <String>[
+                      'Câmbio de moeda',
+                      'DOC/TED',
+                      'Empréstimo e Financiamento',
+                    ].map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedValue = newValue!;
+                  });
+                },
+              ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: TextField(
