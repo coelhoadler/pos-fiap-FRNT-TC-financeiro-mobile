@@ -22,7 +22,7 @@ class _NewTransferScreenState extends State<NewTransferScreen> {
             children: <Widget>[
               const ListTile(title: Text('Nova transação')),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                padding: const EdgeInsets.symmetric(horizontal: 8.0),
                 child: TextField(
                   keyboardType: TextInputType.number,
                   decoration: InputDecoration(labelText: 'Valor'),

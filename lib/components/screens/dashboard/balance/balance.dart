@@ -38,7 +38,7 @@ class _BalanceState extends State<Balance> {
 
     return Container(
       color: Color(0xFF004d61),
-      padding: const EdgeInsets.all(50),
+      padding: const EdgeInsets.all(30),
       child: Column(
         children: [
           Text(
