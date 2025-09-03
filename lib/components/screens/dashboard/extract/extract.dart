@@ -16,8 +16,12 @@ class _ExtractState extends State<Extract> {
 
   Stream<QuerySnapshot> _getTransactionsStream() {
     try {
-      String userId = _auth.currentUser!.uid;
-      
+      final user = _auth.currentUser;
+      if (user == null) {
+        throw Exception('Usuário não autenticado');
+      }
+      final userId = user.uid;
+
       return _firestore
           .collection('users')
           .doc(userId)
@@ -30,7 +34,52 @@ class _ExtractState extends State<Extract> {
     }
   }
 
-  
+  String _formatValor(dynamic v) {
+    if (v == null) return 'R\$ 0,00';
+    if (v is num) {
+      return toCurrencyString(
+        v.toString(),
+        mantissaLength: 2,
+        leadingSymbol: 'R\$ ',
+        useSymbolPadding: true,
+        thousandSeparator: ThousandSeparator.Period,
+        shorteningPolicy: ShorteningPolicy.NoShortening,
+      );
+    }
+    if (v is String) {
+      final cleaned = v.replaceAll(RegExp(r'[^0-9,.\-]'), '');
+      final normalized = cleaned.contains(',')
+          ? cleaned.replaceAll('.', '').replaceAll(',', '.')
+          : cleaned;
+      final parsed = double.tryParse(normalized) ?? 0.0;
+
+      return toCurrencyString(
+        parsed.toString(),
+        mantissaLength: 2,
+        leadingSymbol: 'R\$ ',
+        useSymbolPadding: true,
+        thousandSeparator: ThousandSeparator.Period,
+        shorteningPolicy: ShorteningPolicy.NoShortening,
+      );
+    }
+    return 'R\$ 0,00';
+  }
+
+  String _formatDate(dynamic d) {
+    DateTime? dt;
+    if (d is Timestamp) dt = d.toDate();
+    if (d is DateTime) dt = d;
+    if (d is String) dt = DateTime.tryParse(d);
+    dt ??= DateTime.now();
+
+    final day = dt.day.toString().padLeft(2, '0');
+    final month = dt.month.toString().padLeft(2, '0');
+    final year = dt.year.toString();
+    final hour = dt.hour.toString().padLeft(2, '0');
+    final minute = dt.minute.toString().padLeft(2, '0');
+    return '$day/$month/$year às $hour:$minute';
+  }
+
   Widget _buildTransactionsList(QuerySnapshot snapshot) {
     if (snapshot.docs.isEmpty) {
       return Padding(
@@ -45,10 +94,9 @@ class _ExtractState extends State<Extract> {
       );
     }
 
-    return Container(
+    return SizedBox(
       height: 300, 
       child: ListView.builder(
-        shrinkWrap: true,
         itemCount: snapshot.docs.length,
         itemBuilder: (context, index) {
           return _buildTransactionItem(snapshot.docs[index]);
@@ -57,60 +105,70 @@ class _ExtractState extends State<Extract> {
     );
   }
 
-  
   Widget _buildTransactionItem(DocumentSnapshot doc) {
-    try {
-      var dados = doc.data() as Map<String, dynamic>;
-      String descricao = dados['descricao'] ?? '';
-      String valor = dados['valor'] ?? '';
-      DateTime data = (dados['data'] as Timestamp).toDate();
-      
-      return ListTile(
-        contentPadding: EdgeInsets.fromLTRB(20.0, 0, 20.0, 10.0),
-        title: Text(
-          descricao,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-        ),
-        subtitle: Text(
-          _formatDate(data),
-          style: TextStyle(color: Colors.black, fontSize: 14),
-        ),
-        trailing: Text(
-          'R\$ $valor',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-            color: Colors.green,
-          ),
-        ),
-      );
-    } catch (e) {
-      print('>>> Erro ao processar transação: $e');
-      return ListTile(
-        contentPadding: EdgeInsets.fromLTRB(20.0, 0, 20.0, 10.0),
-        title: Text(
-          'Erro ao carregar transação',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-            color: Colors.green,
-          ),
-        ),
-      );
-    }
-  }
+  try {
+    final dados = (doc.data() as Map<String, dynamic>?) ?? {};
+    final descricao = (dados['descricao'] ?? '').toString();
+    final valorFmt = _formatValor(dados['valor']);
+    final dataFmt = _formatDate(dados['data']);
 
-    Widget _buildLoadingState() {
+    return ListTile(
+      contentPadding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 10.0),
+      leading: const Icon(Icons.receipt_long, color: Color(0xFF004d61)),
+
+      title: Text(
+        descricao.isEmpty ? 'Sem descrição' : descricao,
+        style: const TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+        ),
+        overflow: TextOverflow.ellipsis, 
+      ),
+
+      subtitle: Text(
+        '$dataFmt\n$valorFmt',
+        style: const TextStyle(color: Colors.black, fontSize: 14),
+      ),
+
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            icon: const Icon(Icons.edit, color: Color(0xFF004d61)),
+            tooltip: 'Editar',
+            onPressed: () => _editarTransacao(doc.id, dados),
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete, color: Colors.redAccent),
+            tooltip: 'Excluir',
+            onPressed: () => _confirmarExcluirTransacao(doc.id),
+          ),
+        ],
+      ),
+    );
+  } catch (e) {
+    return const ListTile(
+      title: Text(
+        'Erro ao carregar transação',
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          fontSize: 16,
+          color: Colors.red,
+        ),
+      ),
+    );
+  }
+}
+
+
+  Widget _buildLoadingState() {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(),
-          SizedBox(height: 16),
+          const CircularProgressIndicator(),
+          const SizedBox(height: 16),
           Text(
             'Carregando transações...',
             style: TextStyle(
@@ -123,20 +181,15 @@ class _ExtractState extends State<Extract> {
     );
   }
 
-  
   Widget _buildErrorState(String error) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline,
-            color: Colors.red,
-            size: 48,
-          ),
-          SizedBox(height: 16),
-          Text(
+          const Icon(Icons.error_outline, color: Color(0xFFFF5031), size: 48),
+          const SizedBox(height: 16),
+          const Text(
             'Erro ao carregar transações',
             style: TextStyle(
               fontSize: 18,
@@ -144,7 +197,7 @@ class _ExtractState extends State<Extract> {
               color: Colors.red,
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
             error,
             style: TextStyle(
@@ -158,6 +211,121 @@ class _ExtractState extends State<Extract> {
     );
   }
 
+  /// ---------- Ações: Editar / Excluir ----------
+  Future<void> _confirmarExcluirTransacao(String id) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Excluir transação'),
+        content: const Text('Tem certeza que deseja excluir esta transação?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
+          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Excluir')),
+        ],
+      ),
+    );
+
+    if (ok == true) {
+      final userId = _auth.currentUser!.uid;
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('transacoes')
+          .doc(id)
+          .delete();
+    }
+  }
+
+Future<void> _editarTransacao(String id, Map<String, dynamic> dados) async {
+  final userId = _auth.currentUser!.uid;
+
+  // opções de categorias de transação
+  final List<String> opcoes = [
+  'Câmbio de moeda',
+  'DOC/TED',
+  'Empréstimo e Financiamento',
+  ];
+
+  String selectedDescricao = (dados['descricao'] ?? '').toString();
+  final valorCtrl = TextEditingController(text: (dados['valor'] ?? '').toString());
+
+  await showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    builder: (ctx) => Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
+        left: 16, right: 16, top: 16,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('Editar transação', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+          const SizedBox(height: 12),
+
+          DropdownButtonFormField<String>(
+            value: opcoes.contains(selectedDescricao) ? selectedDescricao : null,
+            decoration: const InputDecoration(labelText: 'Categoria'),
+            items: opcoes.map((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(value),
+              );
+            }).toList(),
+            onChanged: (newValue) {
+              if (newValue != null) {
+                selectedDescricao = newValue;
+              }
+            },
+          ),
+
+          const SizedBox(height: 8),
+
+          TextField(
+            controller: valorCtrl,
+            keyboardType: TextInputType.number,
+            inputFormatters: [
+              MoneyInputFormatter(
+                leadingSymbol: 'R\$ ',
+                thousandSeparator: ThousandSeparator.Period,
+                mantissaLength: 2,
+                useSymbolPadding: true,
+              ),
+            ],
+            decoration: const InputDecoration(labelText: 'Valor'),
+          ),
+
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('Cancelar'),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  await _firestore
+                      .collection('users')
+                      .doc(userId)
+                      .collection('transacoes')
+                      .doc(id)
+                      .update({
+                        'descricao': selectedDescricao,
+                        'valor': valorCtrl.text.trim(),
+                      });
+                  if (context.mounted) Navigator.pop(ctx);
+                },
+                child: const Text('Salvar'),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -168,10 +336,9 @@ class _ExtractState extends State<Extract> {
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: [
-              // Cabeçalho do extrato
               Column(
-                children: [
-                  const ListTile(
+                children: const [
+                  ListTile(
                     contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
                     title: Text(
                       'Extrato',
@@ -181,33 +348,28 @@ class _ExtractState extends State<Extract> {
                         color: Colors.black,
                       ),
                     ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.edit, color: Color(0xFF004d61)),
-                        SizedBox(width: 8),
-                        Icon(Icons.delete, color: Color(0xFF004d61)),
-                      ],
-                    ),
+                  ),
+                  Divider(
+                    color: Color(0xFF004d61),
+                    thickness: 1.5,
+                    indent: 20,
+                    endIndent: 20,
                   ),
                 ],
               ),
-              
+
               StreamBuilder<QuerySnapshot>(
                 stream: _getTransactionsStream(),
                 builder: (context, snapshot) {
                   if (snapshot.hasError) {
                     return _buildErrorState(snapshot.error.toString());
                   }
-
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return _buildLoadingState();
                   }
-
                   if (!snapshot.hasData) {
                     return _buildErrorState('Dados não disponíveis');
                   }
-
                   return _buildTransactionsList(snapshot.data!);
                 },
               ),
@@ -218,30 +380,10 @@ class _ExtractState extends State<Extract> {
     );
   }
 
-  String _formatDate(DateTime date) {
-    String day = date.day.toString().padLeft(2, '0');
-    String month = date.month.toString().padLeft(2, '0');
-    String year = date.year.toString();
-    String hour = date.hour.toString().padLeft(2, '0');
-    String minute = date.minute.toString().padLeft(2, '0');
-    
-    return '$day/$month/$year às $hour:$minute';
-  }
-
   String getMonthName(DateTime date) {
     const months = [
-      'Janeiro',
-      'Fevereiro',
-      'Março',
-      'Abril',
-      'Maio',
-      'Junho',
-      'Julho',
-      'Agosto',
-      'Setembro',
-      'Outubro',
-      'Novembro',
-      'Dezembro',
+      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
     ];
     return months[date.month - 1];
   }
