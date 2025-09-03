@@ -13,7 +13,7 @@ class NewTransferScreen extends StatefulWidget {
 class _NewTransferScreenState extends State<NewTransferScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final TextEditingController _valueController = TextEditingController();
+  final TextEditingController _valueController = TextEditingController( text: "R\$ 0,00");
   String selectedValue = 'Câmbio de moeda';
 
   _createTransaction() async {
@@ -30,6 +30,8 @@ class _NewTransferScreenState extends State<NewTransferScreen> {
             'descricao': selectedValue,
           });
 
+      _valueController.text = "R\$ 0,00";
+      
       print('>>> Transação concluída');
     } catch (e) {
       print('>>> Erro ao concluir transação: $e');
@@ -74,7 +76,7 @@ class _NewTransferScreenState extends State<NewTransferScreen> {
                   CurrencyInputFormatter(
                     leadingSymbol: 'R\$',
                     useSymbolPadding: true,
-                    thousandSeparator: ThousandSeparator.Period,
+                    thousandSeparator: ThousandSeparator.Period,                                        
                   ),
                 ],
               ),
