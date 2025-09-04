@@ -75,7 +75,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               SizedBox(height: 5),
               NewTransferScreen(),
               SizedBox(height: 20),
-              Extract(),
+              Extract(uploadImage: false, titleComponent: 'Extrato'),
             ],
           ),
         ),
