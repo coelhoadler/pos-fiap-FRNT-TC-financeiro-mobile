@@ -2,9 +2,14 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'dart:io';
 
 class Extract extends StatefulWidget {
-  const Extract({super.key});
+  final bool uploadImage;
+  final String titleComponent;
+  const Extract({super.key, this.uploadImage = false, this.titleComponent = ''});
 
   @override
   State<Extract> createState() => _ExtractState();
@@ -13,6 +18,8 @@ class Extract extends StatefulWidget {
 class _ExtractState extends State<Extract> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  final ImagePicker _picker = ImagePicker();
 
   Stream<QuerySnapshot> _getTransactionsStream() {
     try {
@@ -80,6 +87,25 @@ class _ExtractState extends State<Extract> {
     return '$day/$month/$year às $hour:$minute';
   }
 
+  void _pickImage() async {
+    final pickedFile = await _picker.pickImage(source: ImageSource.camera);
+    if (pickedFile != null) {
+      _uploadImageToFirebase(pickedFile.path);
+    }
+  }
+
+  void _uploadImageToFirebase(String filePath) async {
+    try {
+      File file = File(filePath);
+      String fileName = file.path.split('/').last;
+
+      await FirebaseStorage.instance.ref('uploads/$fileName').putFile(file);
+      print('>>> upload realizado com sucesso');
+    } catch (e) {
+      print('>>> Erro ao realizar upload: $e');
+    }
+  }
+
   Widget _buildTransactionsList(QuerySnapshot snapshot) {
     if (snapshot.docs.isEmpty) {
       return Padding(
@@ -92,7 +118,7 @@ class _ExtractState extends State<Extract> {
     }
 
     return SizedBox(
-      height: 300,
+      height: widget.uploadImage ? MediaQuery.of(context).size.height * 0.7 : 300,
       child: ListView.builder(
         itemCount: snapshot.docs.length,
         itemBuilder: (context, index) {
@@ -142,6 +168,12 @@ class _ExtractState extends State<Extract> {
               tooltip: 'Excluir',
               onPressed: () => _confirmarExcluirTransacao(doc.id),
             ),
+            if (widget.uploadImage)
+              IconButton(
+                onPressed: _pickImage,
+                icon: const Icon(Icons.upload),
+                tooltip: 'Upload Image',
+              ),
           ],
         ),
       );
@@ -339,17 +371,17 @@ class _ExtractState extends State<Extract> {
       padding: const EdgeInsets.all(8.0),
       child: Center(
         child: Card(
-          color: Colors.white,
-          margin: EdgeInsets.fromLTRB(0, 0, 0, 50),
+          color: const Color.fromARGB(226, 255, 255, 255),
+          margin: widget.uploadImage ? EdgeInsets.all(0) : EdgeInsets.fromLTRB(0, 0, 0, 50),
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: [
               Column(
-                children: const [
+                children: [
                   ListTile(
                     contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
                     title: Text(
-                      'Extrato',
+                      widget.titleComponent,
                       style: TextStyle(
                         fontWeight: FontWeight.w500,
                         fontSize: 22,
@@ -357,7 +389,7 @@ class _ExtractState extends State<Extract> {
                       ),
                     ),
                   ),
-                  Divider(
+                  const Divider(
                     color: Color(0xFF004d61),
                     thickness: 1.5,
                     indent: 20,
