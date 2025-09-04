@@ -71,11 +71,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           alignment: Alignment.topCenter,
           child: Column(
             children: [
-              Balance(
-                nameUser: _auth.currentUser?.displayName?.split(' ')[0] ?? '',
-                amount: 100.0,
-                dateTime: DateTime.now(),
-              ),
+              Balance(),
               SizedBox(height: 5),
               NewTransferScreen(),
               SizedBox(height: 20),
