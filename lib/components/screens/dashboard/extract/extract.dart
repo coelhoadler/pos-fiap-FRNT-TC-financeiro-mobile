@@ -86,16 +86,13 @@ class _ExtractState extends State<Extract> {
         padding: const EdgeInsets.all(16.0),
         child: Text(
           'Nenhuma transação encontrada',
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey[600],
-          ),
+          style: TextStyle(fontSize: 16, color: Colors.grey[600]),
         ),
       );
     }
 
     return SizedBox(
-      height: 300, 
+      height: 300,
       child: ListView.builder(
         itemCount: snapshot.docs.length,
         itemBuilder: (context, index) {
@@ -106,60 +103,61 @@ class _ExtractState extends State<Extract> {
   }
 
   Widget _buildTransactionItem(DocumentSnapshot doc) {
-  try {
-    final dados = (doc.data() as Map<String, dynamic>?) ?? {};
-    final descricao = (dados['descricao'] ?? '').toString();
-    final valorFmt = _formatValor(dados['valor']);
-    final dataFmt = _formatDate(dados['data']);
+    try {
+      final dados = (doc.data() as Map<String, dynamic>?) ?? {};
+      final descricao = (dados['descricao'] ?? '').toString();
+      final valorFmt = _formatValor(dados['valor']);
+      final dataFmt = _formatDate(dados['data']);
 
-    return ListTile(
-      contentPadding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 10.0),
-      leading: const Icon(Icons.receipt_long, color: Color(0xFF004d61)),
-
-      title: Text(
-        descricao.isEmpty ? 'Sem descrição' : descricao,
-        style: const TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 16,
+      return ListTile(
+        contentPadding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 10.0),
+        titleAlignment: ListTileTitleAlignment.top,
+        leading: const Icon(
+          Icons.receipt_long,
+          color: Color(0xFF004d61),
+          size: 25,
         ),
-        overflow: TextOverflow.ellipsis, 
-      ),
 
-      subtitle: Text(
-        '$dataFmt\n$valorFmt',
-        style: const TextStyle(color: Colors.black, fontSize: 14),
-      ),
-
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          IconButton(
-            icon: const Icon(Icons.edit, color: Color(0xFF004d61)),
-            tooltip: 'Editar',
-            onPressed: () => _editarTransacao(doc.id, dados),
-          ),
-          IconButton(
-            icon: const Icon(Icons.delete, color: Colors.redAccent),
-            tooltip: 'Excluir',
-            onPressed: () => _confirmarExcluirTransacao(doc.id),
-          ),
-        ],
-      ),
-    );
-  } catch (e) {
-    return const ListTile(
-      title: Text(
-        'Erro ao carregar transação',
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 16,
-          color: Colors.red,
+        title: Text(
+          descricao.isEmpty ? 'Sem descrição' : descricao,
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+          overflow: TextOverflow.ellipsis,
         ),
-      ),
-    );
+
+        subtitle: Text(
+          '$dataFmt\n$valorFmt',
+          style: const TextStyle(color: Colors.black, fontSize: 14),
+        ),
+
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.edit, color: Color(0xFF004d61)),
+              tooltip: 'Editar',
+              onPressed: () => _editarTransacao(doc.id, dados),
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete, color: Colors.redAccent),
+              tooltip: 'Excluir',
+              onPressed: () => _confirmarExcluirTransacao(doc.id),
+            ),
+          ],
+        ),
+      );
+    } catch (e) {
+      return const ListTile(
+        title: Text(
+          'Erro ao carregar transação',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+            color: Colors.red,
+          ),
+        ),
+      );
+    }
   }
-}
-
 
   Widget _buildLoadingState() {
     return Padding(
@@ -171,10 +169,7 @@ class _ExtractState extends State<Extract> {
           const SizedBox(height: 16),
           Text(
             'Carregando transações...',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
           ),
         ],
       ),
@@ -200,10 +195,7 @@ class _ExtractState extends State<Extract> {
           const SizedBox(height: 8),
           Text(
             error,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey[600],
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey[600]),
             textAlign: TextAlign.center,
           ),
         ],
@@ -219,8 +211,14 @@ class _ExtractState extends State<Extract> {
         title: const Text('Excluir transação'),
         content: const Text('Tem certeza que deseja excluir esta transação?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancelar')),
-          TextButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('Excluir')),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Excluir'),
+          ),
         ],
       ),
     );
@@ -236,95 +234,104 @@ class _ExtractState extends State<Extract> {
     }
   }
 
-Future<void> _editarTransacao(String id, Map<String, dynamic> dados) async {
-  final userId = _auth.currentUser!.uid;
+  Future<void> _editarTransacao(String id, Map<String, dynamic> dados) async {
+    final userId = _auth.currentUser!.uid;
 
-  // opções de categorias de transação
-  final List<String> opcoes = [
-  'Câmbio de moeda',
-  'DOC/TED',
-  'Empréstimo e Financiamento',
-  ];
+    // opções de categorias de transação
+    final List<String> opcoes = [
+      'Câmbio de moeda',
+      'DOC/TED',
+      'Empréstimo e Financiamento',
+    ];
 
-  String selectedDescricao = (dados['descricao'] ?? '').toString();
-  final valorCtrl = TextEditingController(text: (dados['valor'] ?? '').toString());
+    String selectedDescricao = (dados['descricao'] ?? '').toString();
+    final valorCtrl = TextEditingController(
+      text: (dados['valor'] ?? '').toString(),
+    );
 
-  await showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    builder: (ctx) => Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
-        left: 16, right: 16, top: 16,
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
+          left: 16,
+          right: 16,
+          top: 16,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Editar transação',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const SizedBox(height: 12),
+
+            DropdownButtonFormField<String>(
+              initialValue: opcoes.contains(selectedDescricao)
+                  ? selectedDescricao
+                  : null,
+              decoration: const InputDecoration(labelText: 'Categoria'),
+              items: opcoes.map((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+              onChanged: (newValue) {
+                if (newValue != null) {
+                  selectedDescricao = newValue;
+                }
+              },
+            ),
+
+            const SizedBox(height: 8),
+
+            TextField(
+              controller: valorCtrl,
+              keyboardType: TextInputType.number,
+              inputFormatters: [
+                MoneyInputFormatter(
+                  leadingSymbol: 'R\$ ',
+                  thousandSeparator: ThousandSeparator.Period,
+                  mantissaLength: 2,
+                  useSymbolPadding: true,
+                ),
+              ],
+              decoration: const InputDecoration(labelText: 'Valor'),
+            ),
+
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Cancelar'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    await _firestore
+                        .collection('users')
+                        .doc(userId)
+                        .collection('transacoes')
+                        .doc(id)
+                        .update({
+                          'descricao': selectedDescricao,
+                          'valor': valorCtrl.text.trim(),
+                        });
+                    if (context.mounted) Navigator.pop(ctx);
+                  },
+                  child: const Text('Salvar'),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Text('Editar transação', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-          const SizedBox(height: 12),
-
-          DropdownButtonFormField<String>(
-            value: opcoes.contains(selectedDescricao) ? selectedDescricao : null,
-            decoration: const InputDecoration(labelText: 'Categoria'),
-            items: opcoes.map((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value),
-              );
-            }).toList(),
-            onChanged: (newValue) {
-              if (newValue != null) {
-                selectedDescricao = newValue;
-              }
-            },
-          ),
-
-          const SizedBox(height: 8),
-
-          TextField(
-            controller: valorCtrl,
-            keyboardType: TextInputType.number,
-            inputFormatters: [
-              MoneyInputFormatter(
-                leadingSymbol: 'R\$ ',
-                thousandSeparator: ThousandSeparator.Period,
-                mantissaLength: 2,
-                useSymbolPadding: true,
-              ),
-            ],
-            decoration: const InputDecoration(labelText: 'Valor'),
-          ),
-
-          const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Cancelar'),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  await _firestore
-                      .collection('users')
-                      .doc(userId)
-                      .collection('transacoes')
-                      .doc(id)
-                      .update({
-                        'descricao': selectedDescricao,
-                        'valor': valorCtrl.text.trim(),
-                      });
-                  if (context.mounted) Navigator.pop(ctx);
-                },
-                child: const Text('Salvar'),
-              ),
-            ],
-          ),
-        ],
-      ),
-    ),
-  );
-}
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -333,6 +340,7 @@ Future<void> _editarTransacao(String id, Map<String, dynamic> dados) async {
       child: Center(
         child: Card(
           color: Colors.white,
+          margin: EdgeInsets.fromLTRB(0, 0, 0, 50),
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: [
@@ -382,8 +390,18 @@ Future<void> _editarTransacao(String id, Map<String, dynamic> dados) async {
 
   String getMonthName(DateTime date) {
     const months = [
-      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
+      'Janeiro',
+      'Fevereiro',
+      'Março',
+      'Abril',
+      'Maio',
+      'Junho',
+      'Julho',
+      'Agosto',
+      'Setembro',
+      'Outubro',
+      'Novembro',
+      'Dezembro',
     ];
     return months[date.month - 1];
   }
