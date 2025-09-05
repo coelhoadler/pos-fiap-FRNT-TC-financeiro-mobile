@@ -69,7 +69,7 @@ class _BalanceState extends State<Balance> {
       'Sexta-feira',
       'Sábado',
     ];
-    return days[date.weekday - 1];
+    return days[date.weekday];
   }
 
   @override
@@ -84,7 +84,7 @@ class _BalanceState extends State<Balance> {
       child: Column(
         children: [
           Text(
-            "Olá, ${_auth.currentUser?.displayName ?? 'Usuário'}",
+            "Olá, ${_auth.currentUser?.displayName?.split(' ')[0] ?? 'Usuário'}",
             style: TextStyle(fontSize: 26, color: Colors.white),
           ),
           SizedBox(height: 20),

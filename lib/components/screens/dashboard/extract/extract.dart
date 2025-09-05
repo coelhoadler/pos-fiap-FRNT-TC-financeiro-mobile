@@ -6,10 +6,16 @@ import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:io';
 
+import 'package:pos_fiap_fin_mobile/utils/routes.dart';
+
 class Extract extends StatefulWidget {
   final bool uploadImage;
   final String titleComponent;
-  const Extract({super.key, this.uploadImage = false, this.titleComponent = ''});
+  const Extract({
+    super.key,
+    this.uploadImage = false,
+    this.titleComponent = '',
+  });
 
   @override
   State<Extract> createState() => _ExtractState();
@@ -87,23 +93,36 @@ class _ExtractState extends State<Extract> {
     return '$day/$month/$year às $hour:$minute';
   }
 
-  void _pickImage() async {
+  void _pickImage({required DocumentSnapshot currentTransfer}) async {
     final pickedFile = await _picker.pickImage(source: ImageSource.camera);
     if (pickedFile != null) {
-      _uploadImageToFirebase(pickedFile.path);
+      _uploadImageToFirebase(pickedFile.path, id: currentTransfer.id);
     }
   }
 
-  void _uploadImageToFirebase(String filePath) async {
+  void _uploadImageToFirebase(String filePath, {required String id}) async {
     try {
       File file = File(filePath);
       String fileName = file.path.split('/').last;
+
+      final userId = _auth.currentUser!.uid;
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('transacoes')
+          .doc(id)
+          .update({'imagePathUrl': 'uploads/$fileName'});
 
       await FirebaseStorage.instance.ref('uploads/$fileName').putFile(file);
       print('>>> upload realizado com sucesso');
     } catch (e) {
       print('>>> Erro ao realizar upload: $e');
     }
+  }
+
+  _goToImageGallery(String imagePathUrl) {
+    print('>>> Navigating to ImageGallery with path: $imagePathUrl');
+    Navigator.pushNamed(context, Routes.imageGallery, arguments: imagePathUrl);
   }
 
   Widget _buildTransactionsList(QuerySnapshot snapshot) {
@@ -118,7 +137,9 @@ class _ExtractState extends State<Extract> {
     }
 
     return SizedBox(
-      height: widget.uploadImage ? MediaQuery.of(context).size.height * 0.7 : 300,
+      height: widget.uploadImage
+          ? MediaQuery.of(context).size.height * 0.7
+          : 300,
       child: ListView.builder(
         itemCount: snapshot.docs.length,
         itemBuilder: (context, index) {
@@ -131,6 +152,7 @@ class _ExtractState extends State<Extract> {
   Widget _buildTransactionItem(DocumentSnapshot doc) {
     try {
       final dados = (doc.data() as Map<String, dynamic>?) ?? {};
+      final imagePathUrl = dados['imagePathUrl'] ?? '';
       final descricao = (dados['descricao'] ?? '').toString();
       final valorFmt = _formatValor(dados['valor']);
       final dataFmt = _formatDate(dados['data']);
@@ -170,9 +192,13 @@ class _ExtractState extends State<Extract> {
             ),
             if (widget.uploadImage)
               IconButton(
-                onPressed: _pickImage,
-                icon: const Icon(Icons.upload),
-                tooltip: 'Upload Image',
+                onPressed: () => imagePathUrl.isNotEmpty
+                    ? _goToImageGallery(imagePathUrl)
+                    : _pickImage(currentTransfer: doc),
+                icon: Icon(
+                  imagePathUrl.isNotEmpty ? Icons.image : Icons.upload,
+                ),
+                tooltip: 'Enviar imagem',
               ),
           ],
         ),
@@ -372,7 +398,9 @@ class _ExtractState extends State<Extract> {
       child: Center(
         child: Card(
           color: const Color.fromARGB(226, 255, 255, 255),
-          margin: widget.uploadImage ? EdgeInsets.all(0) : EdgeInsets.fromLTRB(0, 0, 0, 50),
+          margin: widget.uploadImage
+              ? EdgeInsets.all(0)
+              : EdgeInsets.fromLTRB(0, 0, 0, 50),
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: [

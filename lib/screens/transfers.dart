@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import '../components/screens/dashboard/extract/extract.dart';
 
@@ -10,26 +9,18 @@ class TransfersScreen extends StatefulWidget {
 }
 
 class _TransfersScreenState extends State<TransfersScreen> {
-
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: Scaffold(
-        appBar: AppBar(title: const Text('Página de transferências')),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Extract(uploadImage: true, titleComponent: 'Transferências'),
-            ],
-          ),
+    return Scaffold(
+      appBar: AppBar(title: const Text('Transferências')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Extract(uploadImage: true, titleComponent: 'Transferências'),
+          ],
         ),
       ),
     );
   }
-
-  
 }

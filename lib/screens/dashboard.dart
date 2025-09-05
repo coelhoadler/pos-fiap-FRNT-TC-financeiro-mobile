@@ -51,6 +51,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               leading: Icon(Icons.home),
               title: Text('Transferências'),
               onTap: () {
+                Navigator.of(context).pop();
                 Navigator.pushNamed(context, Routes.transfers);
               },
             ),
@@ -58,6 +59,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               leading: Icon(Icons.logout),
               title: Text('Sair'),
               onTap: () async {
+                Navigator.of(context).pop();
                 await _auth.signOut();
                 if (!mounted) return;
                 Navigator.pushReplacementNamed(context, Routes.login);
@@ -75,7 +77,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               SizedBox(height: 5),
               NewTransferScreen(),
               SizedBox(height: 20),
-              Extract(uploadImage: false, titleComponent: 'Extrato'),
+              Extract(uploadImage: true, titleComponent: 'Extrato'),
             ],
           ),
         ),
