@@ -4,6 +4,8 @@ import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:pos_fiap_fin_mobile/components/ui/format_date_util.dart';
+import 'package:pos_fiap_fin_mobile/components/ui/format_valor_util.dart';
 import 'package:pos_fiap_fin_mobile/components/ui/toast_util.dart';
 import 'dart:io';
 
@@ -46,52 +48,6 @@ class _ExtractState extends State<Extract> {
       print('>>> Erro ao configurar stream de transações: $e');
       rethrow;
     }
-  }
-
-  String _formatValor(dynamic v) {
-    if (v == null) return 'R\$ 0,00';
-    if (v is num) {
-      return toCurrencyString(
-        v.toString(),
-        mantissaLength: 2,
-        leadingSymbol: 'R\$ ',
-        useSymbolPadding: true,
-        thousandSeparator: ThousandSeparator.Period,
-        shorteningPolicy: ShorteningPolicy.NoShortening,
-      );
-    }
-    if (v is String) {
-      final cleaned = v.replaceAll(RegExp(r'[^0-9,.\-]'), '');
-      final normalized = cleaned.contains(',')
-          ? cleaned.replaceAll('.', '').replaceAll(',', '.')
-          : cleaned;
-      final parsed = double.tryParse(normalized) ?? 0.0;
-
-      return toCurrencyString(
-        parsed.toString(),
-        mantissaLength: 2,
-        leadingSymbol: 'R\$ ',
-        useSymbolPadding: true,
-        thousandSeparator: ThousandSeparator.Period,
-        shorteningPolicy: ShorteningPolicy.NoShortening,
-      );
-    }
-    return 'R\$ 0,00';
-  }
-
-  String _formatDate(dynamic d) {
-    DateTime? dt;
-    if (d is Timestamp) dt = d.toDate();
-    if (d is DateTime) dt = d;
-    if (d is String) dt = DateTime.tryParse(d);
-    dt ??= DateTime.now();
-
-    final day = dt.day.toString().padLeft(2, '0');
-    final month = dt.month.toString().padLeft(2, '0');
-    final year = dt.year.toString();
-    final hour = dt.hour.toString().padLeft(2, '0');
-    final minute = dt.minute.toString().padLeft(2, '0');
-    return '$day/$month/$year às $hour:$minute';
   }
 
   void _pickImage({required DocumentSnapshot currentTransfer}) async {
@@ -161,8 +117,8 @@ class _ExtractState extends State<Extract> {
       final imagePathUrl = dados['imagePathUrl'] ?? '';
       final transactionId = doc.id;
       final descricao = (dados['descricao'] ?? '').toString();
-      final valorFmt = _formatValor(dados['valor']);
-      final dataFmt = _formatDate(dados['data']);
+      final valorFmt = FormatValorUtil.formatValor(dados['valor']);
+      final dataFmt = FormatDateUtil.formatDate(dados['data']);
 
       return ListTile(
         contentPadding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 10.0),
