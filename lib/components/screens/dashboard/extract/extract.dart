@@ -320,7 +320,7 @@ class _ExtractState extends State<Extract> {
               controller: valorCtrl,
               keyboardType: TextInputType.number,
               inputFormatters: [
-                MoneyInputFormatter(
+                CurrencyInputFormatter(
                   leadingSymbol: 'R\$ ',
                   thousandSeparator: ThousandSeparator.Period,
                   mantissaLength: 2,
@@ -416,23 +416,5 @@ class _ExtractState extends State<Extract> {
         ),
       ),
     );
-  }
-
-  String getMonthName(DateTime date) {
-    const months = [
-      'Janeiro',
-      'Fevereiro',
-      'Março',
-      'Abril',
-      'Maio',
-      'Junho',
-      'Julho',
-      'Agosto',
-      'Setembro',
-      'Outubro',
-      'Novembro',
-      'Dezembro',
-    ];
-    return months[date.month - 1];
   }
 }

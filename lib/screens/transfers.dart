@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pos_fiap_fin_mobile/components/ui/firebase_logout_util.dart';
 import 'package:pos_fiap_fin_mobile/screens/image_gallery.dart';
 import 'package:pos_fiap_fin_mobile/screens/login.dart';
 import '../components/screens/dashboard/extract/extract.dart';
@@ -77,15 +78,13 @@ class _TransfersScreenState extends State<TransfersScreen> {
                 leading: Icon(Icons.logout),
                 title: Text('Sair'),
                 onTap: () async {
-                  await _auth.signOut();
-                  if (!mounted) return;
-                  Navigator.pushReplacementNamed(context, Routes.login);
+                  FirebaseLogoutUtil.logout(context);
                 },
               ),
             ],
           ),
         ),
-        body: Center(
+        body: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
