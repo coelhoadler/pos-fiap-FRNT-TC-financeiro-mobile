@@ -96,7 +96,7 @@ class _NewTransferScreenState extends State<NewTransferScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: TextField(
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(labelText: 'Valor'),
