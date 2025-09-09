@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pos_fiap_fin_mobile/components/ui/toast_util.dart';
 
 class NewTransferScreen extends StatefulWidget {
   const NewTransferScreen({super.key});
@@ -13,8 +14,22 @@ class NewTransferScreen extends StatefulWidget {
 class _NewTransferScreenState extends State<NewTransferScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final TextEditingController _valueController = TextEditingController( text: "R\$ 0,00");
-  String selectedValue = 'Câmbio de moeda';
+  final TextEditingController _valueController = TextEditingController(
+    text: "R\$ 0,00",
+  );
+
+  bool isButtonEnabled = false;
+  String selectedValue = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _valueController.addListener(() {
+      setState(() {
+        isButtonEnabled = _valueController.text.isNotEmpty;
+      });
+    });
+  }
 
   _createTransaction() async {
     try {
@@ -28,11 +43,17 @@ class _NewTransferScreenState extends State<NewTransferScreen> {
             'valor': _valueController.text,
             'data': DateTime.now(),
             'descricao': selectedValue,
+            'imagePathUrl': null,
           });
 
-      _valueController.text = "R\$ 0,00";
-      
-      print('>>> Transação concluída');
+      FocusScope.of(context).unfocus();
+      ToastUtil.showToast(context, 'Transação criada com sucesso.');
+
+      setState(() {
+        selectedValue = '';
+        _valueController.text = "R\$ 0,00";
+        isButtonEnabled = false;
+      });
     } catch (e) {
       print('>>> Erro ao concluir transação: $e');
     }
@@ -40,43 +61,56 @@ class _NewTransferScreenState extends State<NewTransferScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final List<String> opcoes = [
+      'Câmbio de moeda',
+      'DOC/TED',
+      'Empréstimo e Financiamento',
+    ];
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Card(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            const ListTile(title: Text('Nova transação')),
-            DropdownButton<String>(
-              value: selectedValue,
-              items:
-                  <String>[
-                    'Câmbio de moeda',
-                    'DOC/TED',
-                    'Empréstimo e Financiamento',
-                  ].map<DropdownMenuItem<String>>((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  selectedValue = newValue!;
-                });
-              },
+            const ListTile(title: Text('Criar nova transação')),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: DropdownButtonFormField<String>(
+                initialValue: opcoes.contains(selectedValue)
+                    ? selectedValue
+                    : null,
+                hint: const Text('Selecione uma categoria'),
+                items: opcoes.map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                decoration: const InputDecoration(labelText: 'Categoria'),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedValue = newValue!;
+                  });
+                },
+              ),
             ),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: TextField(
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(labelText: 'Valor'),
                 controller: _valueController,
+                onChanged: (text) {
+                  setState(() {
+                    isButtonEnabled = text.isNotEmpty;
+                  });
+                },
                 inputFormatters: [
                   CurrencyInputFormatter(
                     leadingSymbol: 'R\$',
                     useSymbolPadding: true,
-                    thousandSeparator: ThousandSeparator.Period,                                        
+                    thousandSeparator: ThousandSeparator.Period,
                   ),
                 ],
               ),
@@ -85,7 +119,7 @@ class _NewTransferScreenState extends State<NewTransferScreen> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: <Widget>[
                 TextButton(
-                  onPressed: _createTransaction,
+                  onPressed: isButtonEnabled ? _createTransaction : null,
                   child: const Text('Concluir transação'),
                 ),
               ],

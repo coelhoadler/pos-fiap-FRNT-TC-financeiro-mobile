@@ -4,12 +4,21 @@ import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:pos_fiap_fin_mobile/components/ui/format_date_util.dart';
+import 'package:pos_fiap_fin_mobile/components/ui/format_valor_util.dart';
+import 'package:pos_fiap_fin_mobile/components/ui/toast_util.dart';
 import 'dart:io';
+
+import 'package:pos_fiap_fin_mobile/utils/routes.dart';
 
 class Extract extends StatefulWidget {
   final bool uploadImage;
   final String titleComponent;
-  const Extract({super.key, this.uploadImage = false, this.titleComponent = ''});
+  const Extract({
+    super.key,
+    this.uploadImage = false,
+    this.titleComponent = '',
+  });
 
   @override
   State<Extract> createState() => _ExtractState();
@@ -18,7 +27,6 @@ class Extract extends StatefulWidget {
 class _ExtractState extends State<Extract> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
   final ImagePicker _picker = ImagePicker();
 
   Stream<QuerySnapshot> _getTransactionsStream() {
@@ -27,6 +35,7 @@ class _ExtractState extends State<Extract> {
       if (user == null) {
         throw Exception('Usuário não autenticado');
       }
+
       final userId = user.uid;
 
       return _firestore
@@ -41,69 +50,44 @@ class _ExtractState extends State<Extract> {
     }
   }
 
-  String _formatValor(dynamic v) {
-    if (v == null) return 'R\$ 0,00';
-    if (v is num) {
-      return toCurrencyString(
-        v.toString(),
-        mantissaLength: 2,
-        leadingSymbol: 'R\$ ',
-        useSymbolPadding: true,
-        thousandSeparator: ThousandSeparator.Period,
-        shorteningPolicy: ShorteningPolicy.NoShortening,
-      );
-    }
-    if (v is String) {
-      final cleaned = v.replaceAll(RegExp(r'[^0-9,.\-]'), '');
-      final normalized = cleaned.contains(',')
-          ? cleaned.replaceAll('.', '').replaceAll(',', '.')
-          : cleaned;
-      final parsed = double.tryParse(normalized) ?? 0.0;
-
-      return toCurrencyString(
-        parsed.toString(),
-        mantissaLength: 2,
-        leadingSymbol: 'R\$ ',
-        useSymbolPadding: true,
-        thousandSeparator: ThousandSeparator.Period,
-        shorteningPolicy: ShorteningPolicy.NoShortening,
-      );
-    }
-    return 'R\$ 0,00';
-  }
-
-  String _formatDate(dynamic d) {
-    DateTime? dt;
-    if (d is Timestamp) dt = d.toDate();
-    if (d is DateTime) dt = d;
-    if (d is String) dt = DateTime.tryParse(d);
-    dt ??= DateTime.now();
-
-    final day = dt.day.toString().padLeft(2, '0');
-    final month = dt.month.toString().padLeft(2, '0');
-    final year = dt.year.toString();
-    final hour = dt.hour.toString().padLeft(2, '0');
-    final minute = dt.minute.toString().padLeft(2, '0');
-    return '$day/$month/$year às $hour:$minute';
-  }
-
-  void _pickImage() async {
+  void _pickImage({required DocumentSnapshot currentTransfer}) async {
     final pickedFile = await _picker.pickImage(source: ImageSource.camera);
     if (pickedFile != null) {
-      _uploadImageToFirebase(pickedFile.path);
+      _uploadImageToFirebase(pickedFile.path, id: currentTransfer.id);
     }
   }
 
-  void _uploadImageToFirebase(String filePath) async {
+  void _uploadImageToFirebase(String filePath, {required String id}) async {
     try {
       File file = File(filePath);
       String fileName = file.path.split('/').last;
 
+      final userId = _auth.currentUser!.uid;
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('transacoes')
+          .doc(id)
+          .update({'imagePathUrl': 'uploads/$fileName'});
+
       await FirebaseStorage.instance.ref('uploads/$fileName').putFile(file);
-      print('>>> upload realizado com sucesso');
+
+      ToastUtil.showToast(context, 'O upload da imagem foi concluído.');
     } catch (e) {
       print('>>> Erro ao realizar upload: $e');
+      ToastUtil.showToast(context, 'Erro ao realizar upload da imagem.');
     }
+  }
+
+  _goToImageGallery(String? transactionId, String imagePathUrl) {
+    Navigator.pushNamed(
+      context,
+      Routes.imageGallery,
+      arguments: {
+        'imagePathUrl': '/$imagePathUrl',
+        'transactionId': transactionId,
+      },
+    );
   }
 
   Widget _buildTransactionsList(QuerySnapshot snapshot) {
@@ -117,23 +101,24 @@ class _ExtractState extends State<Extract> {
       );
     }
 
-    return SizedBox(
-      height: widget.uploadImage ? MediaQuery.of(context).size.height * 0.7 : 300,
-      child: ListView.builder(
-        itemCount: snapshot.docs.length,
-        itemBuilder: (context, index) {
-          return _buildTransactionItem(snapshot.docs[index]);
-        },
-      ),
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: snapshot.docs.length,
+      itemBuilder: (context, index) {
+        return _buildTransactionItem(snapshot.docs[index]);
+      },
     );
   }
 
   Widget _buildTransactionItem(DocumentSnapshot doc) {
     try {
       final dados = (doc.data() as Map<String, dynamic>?) ?? {};
+      final imagePathUrl = dados['imagePathUrl'] ?? '';
+      final transactionId = doc.id;
       final descricao = (dados['descricao'] ?? '').toString();
-      final valorFmt = _formatValor(dados['valor']);
-      final dataFmt = _formatDate(dados['data']);
+      final valorFmt = FormatValorUtil.formatValor(dados['valor']);
+      final dataFmt = FormatDateUtil.formatDate(dados['data']);
 
       return ListTile(
         contentPadding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 10.0),
@@ -170,9 +155,20 @@ class _ExtractState extends State<Extract> {
             ),
             if (widget.uploadImage)
               IconButton(
-                onPressed: _pickImage,
-                icon: const Icon(Icons.upload),
-                tooltip: 'Upload Image',
+                style: ButtonStyle(
+                  iconColor: WidgetStateProperty.all(
+                    imagePathUrl.isNotEmpty ? Colors.blueAccent : Colors.green,
+                  ),
+                ),
+                onPressed: () => imagePathUrl.isNotEmpty
+                    ? _goToImageGallery(transactionId, imagePathUrl)
+                    : _pickImage(currentTransfer: doc),
+                icon: Icon(
+                  imagePathUrl.isNotEmpty ? Icons.image : Icons.upload,
+                ),
+                tooltip: imagePathUrl.isNotEmpty
+                    ? 'Visualizar imagem'
+                    : 'Enviar imagem',
               ),
           ],
         ),
@@ -324,7 +320,7 @@ class _ExtractState extends State<Extract> {
               controller: valorCtrl,
               keyboardType: TextInputType.number,
               inputFormatters: [
-                MoneyInputFormatter(
+                CurrencyInputFormatter(
                   leadingSymbol: 'R\$ ',
                   thousandSeparator: ThousandSeparator.Period,
                   mantissaLength: 2,
@@ -372,7 +368,9 @@ class _ExtractState extends State<Extract> {
       child: Center(
         child: Card(
           color: const Color.fromARGB(226, 255, 255, 255),
-          margin: widget.uploadImage ? EdgeInsets.all(0) : EdgeInsets.fromLTRB(0, 0, 0, 50),
+          margin: widget.uploadImage
+              ? EdgeInsets.all(0)
+              : EdgeInsets.fromLTRB(0, 0, 0, 50),
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: [
@@ -418,23 +416,5 @@ class _ExtractState extends State<Extract> {
         ),
       ),
     );
-  }
-
-  String getMonthName(DateTime date) {
-    const months = [
-      'Janeiro',
-      'Fevereiro',
-      'Março',
-      'Abril',
-      'Maio',
-      'Junho',
-      'Julho',
-      'Agosto',
-      'Setembro',
-      'Outubro',
-      'Novembro',
-      'Dezembro',
-    ];
-    return months[date.month - 1];
   }
 }

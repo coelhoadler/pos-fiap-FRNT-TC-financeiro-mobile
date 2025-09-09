@@ -1,5 +1,7 @@
-
 import 'package:flutter/material.dart';
+import 'package:pos_fiap_fin_mobile/components/ui/firebase_logout_util.dart';
+import 'package:pos_fiap_fin_mobile/screens/image_gallery.dart';
+import 'package:pos_fiap_fin_mobile/screens/login.dart';
 import '../components/screens/dashboard/extract/extract.dart';
 import '../components/ui/header/header.dart' show Header;
 import 'package:firebase_auth/firebase_auth.dart';
@@ -13,8 +15,8 @@ class TransfersScreen extends StatefulWidget {
 }
 
 class _TransfersScreenState extends State<TransfersScreen> {
-    final FirebaseAuth _auth = FirebaseAuth.instance;
-  
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
   @override
   void initState() {
     super.initState();
@@ -30,9 +32,25 @@ class _TransfersScreenState extends State<TransfersScreen> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      routes: {Routes.login: (context) => const LoginScreen()},
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
       ),
+      onGenerateRoute: (settings) {
+        if (settings.name == Routes.imageGallery) {
+          final args = settings.arguments as Map<String, dynamic>? ?? {};
+          final imagePathUrl = args['imagePathUrl'] as String? ?? '';
+          final transactionId = args['transactionId'] as String? ?? '';
+
+          return MaterialPageRoute(
+            builder: (context) => ImageGalleryScreen(
+              imagePathUrl: imagePathUrl,
+              transactionId: transactionId,
+            ),
+          );
+        }
+        return null;
+      },
       home: Scaffold(
         appBar: Header(
           context: context,
@@ -51,7 +69,7 @@ class _TransfersScreenState extends State<TransfersScreen> {
               ),
               ListTile(
                 leading: Icon(Icons.home),
-                title: Text('Home'),
+                title: Text('Início'),
                 onTap: () {
                   Navigator.pushNamed(context, Routes.dashboard);
                 },
@@ -60,15 +78,13 @@ class _TransfersScreenState extends State<TransfersScreen> {
                 leading: Icon(Icons.logout),
                 title: Text('Sair'),
                 onTap: () async {
-                  await _auth.signOut();
-                  if (!mounted) return;
-                  Navigator.pushReplacementNamed(context, Routes.login);
+                  FirebaseLogoutUtil.logout(context);
                 },
               ),
             ],
           ),
         ),
-        body: Center(
+        body: SingleChildScrollView(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
@@ -79,6 +95,4 @@ class _TransfersScreenState extends State<TransfersScreen> {
       ),
     );
   }
-
-  
 }

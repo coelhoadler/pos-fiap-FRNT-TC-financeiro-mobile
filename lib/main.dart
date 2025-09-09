@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:pos_fiap_fin_mobile/screens/dashboard.dart';
+import 'package:pos_fiap_fin_mobile/screens/image_gallery.dart';
 import 'package:pos_fiap_fin_mobile/screens/register.dart';
 import 'package:pos_fiap_fin_mobile/screens/transfers.dart';
 import 'package:pos_fiap_fin_mobile/screens/login.dart';
@@ -27,6 +28,21 @@ class MyApp extends StatelessWidget {
         Routes.dashboard: (context) => const DashboardScreen(),
         Routes.transfers: (context) => const TransfersScreen(),
         Routes.register: (context) => const RegisterScreen(),
+      },
+      onGenerateRoute: (settings) {
+        if (settings.name == Routes.imageGallery) {
+          final args = settings.arguments as Map<String, dynamic>? ?? {};
+          final imagePathUrl = args['imagePathUrl'] as String? ?? '';
+          final transactionId = args['transactionId'] as String? ?? '';
+
+          return MaterialPageRoute(
+            builder: (context) => ImageGalleryScreen(
+              imagePathUrl: imagePathUrl,
+              transactionId: transactionId,
+            ),
+          );
+        }
+        return null;
       },
     );
   }

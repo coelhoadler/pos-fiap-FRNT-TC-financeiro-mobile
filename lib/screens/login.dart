@@ -1,5 +1,6 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:pos_fiap_fin_mobile/components/ui/inputs/password_input.dart';
 import 'package:pos_fiap_fin_mobile/utils/routes.dart';
 
@@ -14,6 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final FlutterSecureStorage _flutterStorage = FlutterSecureStorage();
 
   String _errorMessage = '';
   bool _isLoading = false;
@@ -44,8 +46,7 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text,
       );
 
-      bool isVerified =
-          FirebaseAuth.instance.currentUser?.emailVerified ?? false;
+      _saveCredentials(_emailController.text, _passwordController.text);
 
       _goToDashboard();
     } on FirebaseAuthException catch (e) {
@@ -57,10 +58,33 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _saveCredentials(String login, String senha) async {
+    await _flutterStorage.write(key: 'login', value: login);
+    await _flutterStorage.write(key: 'senha', value: senha);
+  }
+
+  Future<void> _loadCredentials() async {
+    String? email = await _flutterStorage.read(key: 'email');
+    String? senha = await _flutterStorage.read(key: 'senha');
+
+    if (email != null) {
+      setState(() {
+        _emailController.text = email;
+      });
+    }
+    if (senha != null) {
+      setState(() {
+        _passwordController.text = senha;
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     setErrorMessage('');
+
+    _loadCredentials();
   }
 
   @override

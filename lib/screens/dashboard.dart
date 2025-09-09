@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pos_fiap_fin_mobile/components/screens/dashboard/new_transfer/new_transfer.dart';
+import 'package:pos_fiap_fin_mobile/components/ui/firebase_logout_util.dart';
 import 'package:pos_fiap_fin_mobile/components/ui/header/header.dart';
 import 'package:pos_fiap_fin_mobile/utils/routes.dart';
 
@@ -48,9 +49,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             ListTile(
-              leading: Icon(Icons.home),
+              leading: Icon(Icons.account_balance),
               title: Text('Transferências'),
               onTap: () {
+                Navigator.of(context).pop();
                 Navigator.pushNamed(context, Routes.transfers);
               },
             ),
@@ -58,26 +60,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
               leading: Icon(Icons.logout),
               title: Text('Sair'),
               onTap: () async {
-                await _auth.signOut();
-                if (!mounted) return;
-                Navigator.pushReplacementNamed(context, Routes.login);
+                FirebaseLogoutUtil.logout(context);
               },
             ),
           ],
         ),
       ),
       body: SingleChildScrollView(
-        child: Container(
-          alignment: Alignment.topCenter,
-          child: Column(
-            children: [
-              Balance(),
-              SizedBox(height: 5),
-              NewTransferScreen(),
-              SizedBox(height: 20),
-              Extract(uploadImage: false, titleComponent: 'Extrato'),
-            ],
-          ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Balance(),
+            NewTransferScreen(),
+            Extract(titleComponent: 'Extrato'),
+          ],
         ),
       ),
     );
