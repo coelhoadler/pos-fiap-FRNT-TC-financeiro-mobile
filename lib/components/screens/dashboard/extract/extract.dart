@@ -4,6 +4,7 @@ import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:pos_fiap_fin_mobile/components/ui/toast_util.dart';
 import 'dart:io';
 
 import 'package:pos_fiap_fin_mobile/utils/routes.dart';
@@ -24,7 +25,6 @@ class Extract extends StatefulWidget {
 class _ExtractState extends State<Extract> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
   final ImagePicker _picker = ImagePicker();
 
   Stream<QuerySnapshot> _getTransactionsStream() {
@@ -33,6 +33,7 @@ class _ExtractState extends State<Extract> {
       if (user == null) {
         throw Exception('Usuário não autenticado');
       }
+
       final userId = user.uid;
 
       return _firestore
@@ -114,15 +115,23 @@ class _ExtractState extends State<Extract> {
           .update({'imagePathUrl': 'uploads/$fileName'});
 
       await FirebaseStorage.instance.ref('uploads/$fileName').putFile(file);
-      print('>>> upload realizado com sucesso');
+
+      ToastUtil.showToast(context, 'O upload da imagem foi concluído.');
     } catch (e) {
       print('>>> Erro ao realizar upload: $e');
+      ToastUtil.showToast(context, 'Erro ao realizar upload da imagem.');
     }
   }
 
-  _goToImageGallery(String imagePathUrl) {
-    print('>>> Navigating to ImageGallery with path: $imagePathUrl');
-    Navigator.pushNamed(context, Routes.imageGallery, arguments: imagePathUrl);
+  _goToImageGallery(String? transactionId, String imagePathUrl) {
+    Navigator.pushNamed(
+      context,
+      Routes.imageGallery,
+      arguments: {
+        'imagePathUrl': '/$imagePathUrl',
+        'transactionId': transactionId,
+      },
+    );
   }
 
   Widget _buildTransactionsList(QuerySnapshot snapshot) {
@@ -136,16 +145,13 @@ class _ExtractState extends State<Extract> {
       );
     }
 
-    return SizedBox(
-      height: widget.uploadImage
-          ? MediaQuery.of(context).size.height * 0.7
-          : 300,
-      child: ListView.builder(
-        itemCount: snapshot.docs.length,
-        itemBuilder: (context, index) {
-          return _buildTransactionItem(snapshot.docs[index]);
-        },
-      ),
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: snapshot.docs.length,
+      itemBuilder: (context, index) {
+        return _buildTransactionItem(snapshot.docs[index]);
+      },
     );
   }
 
@@ -153,6 +159,7 @@ class _ExtractState extends State<Extract> {
     try {
       final dados = (doc.data() as Map<String, dynamic>?) ?? {};
       final imagePathUrl = dados['imagePathUrl'] ?? '';
+      final transactionId = doc.id;
       final descricao = (dados['descricao'] ?? '').toString();
       final valorFmt = _formatValor(dados['valor']);
       final dataFmt = _formatDate(dados['data']);
@@ -192,13 +199,20 @@ class _ExtractState extends State<Extract> {
             ),
             if (widget.uploadImage)
               IconButton(
+                style: ButtonStyle(
+                  iconColor: WidgetStateProperty.all(
+                    imagePathUrl.isNotEmpty ? Colors.blueAccent : Colors.green,
+                  ),
+                ),
                 onPressed: () => imagePathUrl.isNotEmpty
-                    ? _goToImageGallery(imagePathUrl)
+                    ? _goToImageGallery(transactionId, imagePathUrl)
                     : _pickImage(currentTransfer: doc),
                 icon: Icon(
                   imagePathUrl.isNotEmpty ? Icons.image : Icons.upload,
                 ),
-                tooltip: 'Enviar imagem',
+                tooltip: imagePathUrl.isNotEmpty
+                    ? 'Visualizar imagem'
+                    : 'Enviar imagem',
               ),
           ],
         ),

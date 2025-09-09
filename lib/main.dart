@@ -31,10 +31,15 @@ class MyApp extends StatelessWidget {
       },
       onGenerateRoute: (settings) {
         if (settings.name == Routes.imageGallery) {
-          final imagePathUrl = settings.arguments as String? ?? '';
+          final args = settings.arguments as Map<String, dynamic>? ?? {};
+          final imagePathUrl = args['imagePathUrl'] as String? ?? '';
+          final transactionId = args['transactionId'] as String? ?? '';
+
           return MaterialPageRoute(
-            builder: (context) =>
-                ImageGalleryScreen(imagePathUrl: imagePathUrl),
+            builder: (context) => ImageGalleryScreen(
+              imagePathUrl: imagePathUrl,
+              transactionId: transactionId,
+            ),
           );
         }
         return null;

@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_multi_formatter/flutter_multi_formatter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pos_fiap_fin_mobile/components/ui/toast_util.dart';
 
 class NewTransferScreen extends StatefulWidget {
   const NewTransferScreen({super.key});
@@ -13,7 +14,9 @@ class NewTransferScreen extends StatefulWidget {
 class _NewTransferScreenState extends State<NewTransferScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final TextEditingController _valueController = TextEditingController( text: "R\$ 0,00");
+  final TextEditingController _valueController = TextEditingController(
+    text: "R\$ 0,00",
+  );
   String selectedValue = 'Câmbio de moeda';
 
   _createTransaction() async {
@@ -28,11 +31,12 @@ class _NewTransferScreenState extends State<NewTransferScreen> {
             'valor': _valueController.text,
             'data': DateTime.now(),
             'descricao': selectedValue,
+            'imagePathUrl': null,
           });
 
       _valueController.text = "R\$ 0,00";
-      
-      print('>>> Transação concluída');
+
+      ToastUtil.showToast(context, 'Transação criada com sucesso.');
     } catch (e) {
       print('>>> Erro ao concluir transação: $e');
     }
@@ -76,7 +80,7 @@ class _NewTransferScreenState extends State<NewTransferScreen> {
                   CurrencyInputFormatter(
                     leadingSymbol: 'R\$',
                     useSymbolPadding: true,
-                    thousandSeparator: ThousandSeparator.Period,                                        
+                    thousandSeparator: ThousandSeparator.Period,
                   ),
                 ],
               ),

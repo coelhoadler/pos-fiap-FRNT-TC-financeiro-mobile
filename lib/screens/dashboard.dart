@@ -48,7 +48,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ),
             ),
             ListTile(
-              leading: Icon(Icons.home),
+              leading: Icon(Icons.account_balance),
               title: Text('Transferências'),
               onTap: () {
                 Navigator.of(context).pop();
@@ -70,14 +70,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       body: SingleChildScrollView(
         child: Container(
-          alignment: Alignment.topCenter,
+          alignment: Alignment.center,
           child: Column(
             children: [
               Balance(),
-              SizedBox(height: 5),
               NewTransferScreen(),
-              SizedBox(height: 20),
-              Extract(uploadImage: true, titleComponent: 'Extrato'),
+              Extract(titleComponent: 'Extrato'),
             ],
           ),
         ),

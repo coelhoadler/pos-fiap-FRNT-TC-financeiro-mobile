@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:pos_fiap_fin_mobile/screens/image_gallery.dart';
+import 'package:pos_fiap_fin_mobile/screens/login.dart';
 import '../components/screens/dashboard/extract/extract.dart';
 import '../components/ui/header/header.dart' show Header;
 import 'package:firebase_auth/firebase_auth.dart';
@@ -29,9 +31,25 @@ class _TransfersScreenState extends State<TransfersScreen> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      routes: {Routes.login: (context) => const LoginScreen()},
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
       ),
+      onGenerateRoute: (settings) {
+        if (settings.name == Routes.imageGallery) {
+          final args = settings.arguments as Map<String, dynamic>? ?? {};
+          final imagePathUrl = args['imagePathUrl'] as String? ?? '';
+          final transactionId = args['transactionId'] as String? ?? '';
+
+          return MaterialPageRoute(
+            builder: (context) => ImageGalleryScreen(
+              imagePathUrl: imagePathUrl,
+              transactionId: transactionId,
+            ),
+          );
+        }
+        return null;
+      },
       home: Scaffold(
         appBar: Header(
           context: context,
