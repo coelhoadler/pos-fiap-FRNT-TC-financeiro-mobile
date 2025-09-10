@@ -378,9 +378,7 @@ class _ExtractState extends State<Extract> {
       child: Center(
         child: Card(
           color: const Color.fromARGB(226, 255, 255, 255),
-          margin: widget.uploadImage
-              ? EdgeInsets.all(0)
-              : EdgeInsets.fromLTRB(0, 0, 0, 50),
+          margin: EdgeInsets.all(0),
           child: Column(
             mainAxisSize: MainAxisSize.max,
             children: [

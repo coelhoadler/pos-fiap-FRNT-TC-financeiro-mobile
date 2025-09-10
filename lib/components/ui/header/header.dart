@@ -9,7 +9,7 @@ class Header extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: const Color(0xFF004D61),
+      backgroundColor: const Color.fromARGB(255, 4, 92, 114),
       toolbarHeight: 80, // aumenta a altura do header
       leading: Container(
         margin: const EdgeInsets.only(left: 8),
@@ -26,30 +26,28 @@ class Header extends StatelessWidget implements PreferredSizeWidget {
       ),
       actions: [
         Container(
-          margin: const EdgeInsets.only(right: 25),
-          child: Center(
-            child: Row(
-              children: [
-                Text(
-                  displayName,
-                  style: const TextStyle(
-                    color: Color(0xFFFF5031),
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+          margin: const EdgeInsets.only(right: 18),
+          child: Row(
+            children: [
+              Text(
+                displayName,
+                style: const TextStyle(
+                  color: Color(0xFFFF5031),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.person_2_outlined,
-                    color: Color(0xFFFF5031),
-                    size: 30,
-                  ),
-                  onPressed: () {
-                    // Ação ao pressionar o ícone de perfil
-                  },
+              ),
+              IconButton(
+                icon: const Icon(
+                  Icons.person_2_outlined,
+                  color: Color(0xFFFF5031),
+                  size: 30,
                 ),
-              ],
-            ),
+                onPressed: () {
+                  // Ação ao pressionar o ícone de perfil
+                },
+              ),
+            ],
           ),
         ),
       ],
