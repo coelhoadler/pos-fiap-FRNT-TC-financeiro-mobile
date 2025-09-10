@@ -27,6 +27,7 @@ class Extract extends StatefulWidget {
 class _ExtractState extends State<Extract> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
   final ImagePicker _picker = ImagePicker();
 
   Stream<QuerySnapshot> _getTransactionsStream() {
@@ -151,7 +152,7 @@ class _ExtractState extends State<Extract> {
             IconButton(
               icon: const Icon(Icons.delete, color: Colors.redAccent),
               tooltip: 'Excluir',
-              onPressed: () => _confirmarExcluirTransacao(doc.id),
+              onPressed: () => _confirmarExcluirTransacao(doc.id, imagePathUrl),
             ),
             if (widget.uploadImage)
               IconButton(
@@ -232,7 +233,10 @@ class _ExtractState extends State<Extract> {
   }
 
   /// ---------- Ações: Editar / Excluir ----------
-  Future<void> _confirmarExcluirTransacao(String id) async {
+  Future<void> _confirmarExcluirTransacao(
+    String id,
+    String imagePathUrl,
+  ) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -259,6 +263,12 @@ class _ExtractState extends State<Extract> {
           .collection('transacoes')
           .doc(id)
           .delete();
+
+      if (imagePathUrl.isNotEmpty) {
+        await _storage.ref(imagePathUrl).delete();
+      }
+
+      ToastUtil.showToast(context, 'Transação excluída com sucesso.');
     }
   }
 
