@@ -59,12 +59,15 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _saveCredentials(String login, String senha) async {
+    await _flutterStorage.delete(key: 'login');
+    await _flutterStorage.delete(key: 'senha');
     await _flutterStorage.write(key: 'login', value: login);
     await _flutterStorage.write(key: 'senha', value: senha);
   }
 
   Future<void> _loadCredentials() async {
-    String? email = await _flutterStorage.read(key: 'email');
+    // Read the same key used when saving (login)
+    String? email = await _flutterStorage.read(key: 'login');
     String? senha = await _flutterStorage.read(key: 'senha');
 
     if (email != null) {
@@ -93,6 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
       appBar: AppBar(
         backgroundColor: Colors.green,
         title: const Text('Login Page'),
+        automaticallyImplyLeading: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

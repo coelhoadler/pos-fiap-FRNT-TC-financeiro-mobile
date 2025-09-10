@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:pos_fiap_fin_mobile/components/ui/firebase_logout_util.dart';
-import 'package:pos_fiap_fin_mobile/screens/image_gallery.dart';
-import 'package:pos_fiap_fin_mobile/screens/login.dart';
 import '../components/screens/dashboard/extract/extract.dart';
 import '../components/ui/header/header.dart' show Header;
 import 'package:firebase_auth/firebase_auth.dart';
@@ -31,66 +29,45 @@ class _TransfersScreenState extends State<TransfersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      routes: {Routes.login: (context) => const LoginScreen()},
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+    return Scaffold(
+      appBar: Header(
+        context: context,
+        displayName: _auth.currentUser?.displayName ?? 'Usuário Desconhecido',
       ),
-      onGenerateRoute: (settings) {
-        if (settings.name == Routes.imageGallery) {
-          final args = settings.arguments as Map<String, dynamic>? ?? {};
-          final imagePathUrl = args['imagePathUrl'] as String? ?? '';
-          final transactionId = args['transactionId'] as String? ?? '';
-
-          return MaterialPageRoute(
-            builder: (context) => ImageGalleryScreen(
-              imagePathUrl: imagePathUrl,
-              transactionId: transactionId,
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Extract(uploadImage: true, titleComponent: 'Transferências'),
+          ],
+        ),
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            DrawerHeader(
+              decoration: BoxDecoration(color: Color(0xFF004D61)),
+              child: Text(
+                _auth.currentUser?.displayName ?? 'Usuário',
+                style: TextStyle(color: Colors.white, fontSize: 24),
+              ),
             ),
-          );
-        }
-        return null;
-      },
-      home: Scaffold(
-        appBar: Header(
-          context: context,
-          displayName: _auth.currentUser?.displayName ?? 'Usuário Desconhecido',
-        ),
-        drawer: Drawer(
-          child: ListView(
-            padding: EdgeInsets.zero,
-            children: [
-              DrawerHeader(
-                decoration: BoxDecoration(color: Color(0xFF004D61)),
-                child: Text(
-                  _auth.currentUser?.displayName ?? 'Usuário',
-                  style: TextStyle(color: Colors.white, fontSize: 24),
-                ),
-              ),
-              ListTile(
-                leading: Icon(Icons.home),
-                title: Text('Início'),
-                onTap: () {
-                  Navigator.pushNamed(context, Routes.dashboard);
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.logout),
-                title: Text('Sair'),
-                onTap: () async {
-                  FirebaseLogoutUtil.logout(context);
-                },
-              ),
-            ],
-          ),
-        ),
-        body: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              Extract(uploadImage: true, titleComponent: 'Transferências'),
-            ],
-          ),
+            ListTile(
+              leading: Icon(Icons.home),
+              title: Text('Início'),
+              onTap: () {
+                Navigator.pushNamed(context, Routes.dashboard);
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.logout),
+              title: Text('Sair'),
+              onTap: () async {
+                FirebaseLogoutUtil.logout(context);
+              },
+            ),
+          ],
         ),
       ),
     );
