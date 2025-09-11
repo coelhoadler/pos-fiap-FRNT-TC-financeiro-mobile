@@ -30,6 +30,18 @@ class _ExtractState extends State<Extract> {
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final ImagePicker _picker = ImagePicker();
 
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_auth.currentUser == null) {
+        Navigator.pushReplacementNamed(context, Routes.login);
+        return;
+      }
+    });
+  }
+
   Stream<QuerySnapshot> _getTransactionsStream() {
     try {
       final user = _auth.currentUser;

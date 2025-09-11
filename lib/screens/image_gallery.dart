@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:pos_fiap_fin_mobile/components/ui/header/header.dart';
 import 'package:pos_fiap_fin_mobile/components/ui/toast_util.dart';
 
 class ImageGalleryScreen extends StatefulWidget {
@@ -10,6 +11,7 @@ class ImageGalleryScreen extends StatefulWidget {
     this.transactionId = '',
     this.imagePathUrl = '',
   });
+
   final String imagePathUrl;
   final String transactionId;
 
@@ -67,7 +69,11 @@ class _ImageGalleryScreenState extends State<ImageGalleryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Visualizador de imagem anexada')),
+      appBar: Header(
+        context: context,
+        displayName: _auth.currentUser?.displayName ?? 'Usuário Desconhecido',
+        showMenuIcon: false,
+      ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -75,27 +81,32 @@ class _ImageGalleryScreenState extends State<ImageGalleryScreen> {
             FutureBuilder<String>(
               future: _getImageUrl(widget.imagePathUrl),
               builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.done &&
-                    snapshot.hasData) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Text('Erro ao carregar imagem.');
+                } else if (snapshot.hasData &&
+                    snapshot.data != null &&
+                    snapshot.data!.isNotEmpty) {
                   return Padding(
-                    padding: const EdgeInsets.all(32.0),
+                    padding: const EdgeInsets.all(15.0),
                     child: Image.network(
                       snapshot.data!,
-                      fit: BoxFit.contain,
+                      fit: BoxFit.cover,
                       width: double.infinity,
                     ),
                   );
-                } else if (snapshot.hasError) {
-                  return Text('Erro ao carregar imagem');
+                } else {
+                  return Text('Nenhuma imagem encontrada.');
                 }
-                return CircularProgressIndicator();
               },
             ),
-            ElevatedButton(
+            ElevatedButton.icon(
               onPressed: () async {
                 _confirmarExcluirTransacao(widget.transactionId);
               },
-              child: Icon(Icons.delete),
+              icon: Icon(Icons.delete),
+              label: Text('Excluir Imagem'),
             ),
           ],
         ),

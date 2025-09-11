@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 
 class Header extends StatelessWidget implements PreferredSizeWidget {
-  const Header({super.key, required this.context, required this.displayName});
+  const Header({
+    super.key,
+    required this.context,
+    required this.displayName,
+    this.showMenuIcon = true,
+  });
 
   final BuildContext context;
   final String displayName;
+  final bool showMenuIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -16,10 +22,17 @@ class Header extends StatelessWidget implements PreferredSizeWidget {
         child: Center(
           // garante que o ícone fique no centro vertical
           child: IconButton(
-            icon: const Icon(Icons.menu, color: Color(0xFFFF5031), size: 40),
+            icon: Icon(
+              (showMenuIcon) ? Icons.menu : Icons.arrow_back,
+              color: Color(0xFFFF5031),
+              size: 40,
+            ),
             onPressed: () {
-              // Ação ao pressionar o ícone de menu
-              Scaffold.of(context).openDrawer();
+              if (showMenuIcon) {
+                Scaffold.of(context).openDrawer();
+              } else {
+                Navigator.pop(context, false);
+              }
             },
           ),
         ),
