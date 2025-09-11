@@ -35,6 +35,15 @@ class _NewTransferScreenState extends State<NewTransferScreen> {
     try {
       String userId = _auth.currentUser!.uid;
 
+      // Remove currency formatting and parse to double for comparison
+      double value = double.tryParse(
+        _valueController.text.replaceAll(RegExp(r'[^\d,]'), '').replaceAll(',', '.')
+      ) ?? 0.0;
+      if (value == 0.0) {
+        ToastUtil.showToast(context, 'O valor deve ser maior que zero.');
+        return;
+      }
+
       await _firestore
           .collection('users')
           .doc(userId)
