@@ -1,6 +1,6 @@
 // This is a generated file; do not edit or check into version control.
-FLUTTER_ROOT=C:\Users\adler\flutter
-FLUTTER_APPLICATION_PATH=C:\Users\adler\Documents\_git\pos-fiap-FRNT-TC-financeiro-mobile
+FLUTTER_ROOT=C:\src\flutter
+FLUTTER_APPLICATION_PATH=E:\FIAP\POS_TECH_FRONT_END\Tech_Challenge_3\pos-fiap-FRNT-TC-financeiro-mobile
 COCOAPODS_PARALLEL_CODE_SIGN=true
 FLUTTER_TARGET=lib\main.dart
 FLUTTER_BUILD_DIR=build

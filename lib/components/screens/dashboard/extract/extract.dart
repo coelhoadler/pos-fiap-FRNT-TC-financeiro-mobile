@@ -14,10 +14,15 @@ import 'package:pos_fiap_fin_mobile/utils/routes.dart';
 class Extract extends StatefulWidget {
   final bool uploadImage;
   final String titleComponent;
+  final DateTime? startDate;
+  final DateTime? endDate; 
+
   const Extract({
     super.key,
     this.uploadImage = false,
     this.titleComponent = '',
+    this.startDate,
+    this.endDate,
   });
 
   @override
@@ -42,25 +47,31 @@ class _ExtractState extends State<Extract> {
     });
   }
 
-  Stream<QuerySnapshot> _getTransactionsStream() {
-    try {
-      final user = _auth.currentUser;
-      if (user == null) {
-        throw Exception('Usuário não autenticado');
-      }
-
-      final userId = user.uid;
-
-      return _firestore
-          .collection('users')
-          .doc(userId)
-          .collection('transacoes')
-          .orderBy('data', descending: true)
-          .snapshots();
-    } catch (e) {
-      print('>>> Erro ao configurar stream de transações: $e');
-      rethrow;
+ Stream<QuerySnapshot> _getTransactionsStream() {
+    final user = _auth.currentUser;
+    if (user == null) {
+      return const Stream.empty();
     }
+
+    final base = _firestore
+        .collection('users')
+        .doc(user.uid)
+        .collection('transacoes');
+
+    Query q = base;
+
+    // Aplica filtros de período, se vieram do Dashboard
+    if (widget.startDate != null) {
+      q = q.where('data', isGreaterThanOrEqualTo: widget.startDate);
+    }
+    if (widget.endDate != null) {
+      q = q.where('data', isLessThan: widget.endDate);
+    }
+
+    // Ordenação (depois dos where)
+    q = q.orderBy('data', descending: true);
+
+    return q.snapshots();
   }
 
   void _pickImage({required DocumentSnapshot currentTransfer}) async {
