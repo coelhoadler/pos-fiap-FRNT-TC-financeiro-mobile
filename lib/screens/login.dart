@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:pos_fiap_fin_mobile/components/ui/inputs/password_input.dart';
 import 'package:pos_fiap_fin_mobile/utils/routes.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -30,8 +31,25 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void setErrorMessage(String message) {
     setState(() {
-      _errorMessage = message;
-      _isLoading = false;
+      if (message.isEmpty) {
+        _errorMessage = "";
+        _isLoading = false;
+        return;
+      } else if (_emailController.text.isEmpty ||
+          _passwordController.text.isEmpty) {
+        _errorMessage = "Preencha todos os campos corretamente.";
+        _isLoading = false;
+        return;
+      } else if (!_emailController.text.contains('@') ||
+          !_emailController.text.contains('.')) {
+        _errorMessage = "Preencha todos os campos corretamente.";
+        _isLoading = false;
+        return;
+      } else {
+        _errorMessage = "Usuário ou senha incorretos.";
+        _isLoading = false;
+        return;
+      }
     });
   }
 
@@ -94,27 +112,38 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.green,
-        title: const Text('Login Page'),
+        backgroundColor: Color(0xFF004d61),
+        titleTextStyle: TextStyle(color: Colors.white, fontSize: 24),
+        centerTitle: true,
+        title: const Text('Login'),
+        toolbarHeight: 100,
         automaticallyImplyLeading: false,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            SvgPicture.asset('lib/assets/svg/logo-bytebank.svg', height: 50),
+            SizedBox(height: 50),
             TextFormField(
-              decoration: InputDecoration(labelText: 'E-mail *'),
+              decoration: InputDecoration(
+                labelText: 'E-mail *',
+                labelStyle: TextStyle(
+                  color: Color(0xFF004d61),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                ),
+                focusedBorder: UnderlineInputBorder(
+                  borderSide: BorderSide(color: Color(0xFF004d61)),
+                ),
+              ),
+              style: TextStyle(fontSize: 16, color: Color(0xFF004d61)),
               controller: _emailController,
             ),
+            SizedBox(height: 30),
             PasswordInput(controller: _passwordController),
-            SizedBox(height: 50),
-            _isLoading
-                ? CircularProgressIndicator()
-                : ElevatedButton(onPressed: _login, child: Text('Login')),
-            TextButton(
-              onPressed: _goToRegisterRoute,
-              child: Text('Criar uma conta'),
-            ),
+            SizedBox(height: 20),
             if (_errorMessage.isNotEmpty)
               Center(
                 child: Text(
@@ -123,6 +152,60 @@ class _LoginScreenState extends State<LoginScreen> {
                   textAlign: TextAlign.center,
                 ),
               ),
+            SizedBox(height: 30),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _isLoading
+                    ? CircularProgressIndicator(color: Color(0xFF004d61),)
+                    : Row(
+                        children: [
+                          ElevatedButton(
+                            onPressed: _login,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Color(0xFF004d61),
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 50,
+                                vertical: 12,
+                              ),
+                              textStyle: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            child: Text('Login'),
+                          ),
+                          SizedBox(width: 20),
+                          ElevatedButton(
+                            onPressed: _goToRegisterRoute,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: Color(0xFF004d61),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(25),
+                              ),
+                              shadowColor: Color(0xFF004d61),
+                              elevation: 2,
+                              alignment: Alignment(0, 20),
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 30,
+                                vertical: 12,
+                              ),
+                              textStyle: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            child: Text('Criar uma conta'),
+                          ),
+                        ],
+                      ),
+              ],
+            ),
           ],
         ),
       ),
