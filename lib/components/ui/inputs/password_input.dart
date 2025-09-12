@@ -24,8 +24,17 @@ class _PasswordInputState extends State<PasswordInput> {
     return TextFormField(
       controller: widget.controller,
       obscureText: _obscure,
+      style: TextStyle(fontSize: 16, color: Color(0xFF004d61)),
       decoration: InputDecoration(
-        labelText: widget.label ?? 'Password *',
+        labelText: widget.label ?? 'Senha *',
+        labelStyle: TextStyle(
+          color: Color(0xFF004d61),
+          fontSize: 18,
+          fontWeight: FontWeight.w500,
+        ),
+        focusedBorder: UnderlineInputBorder(
+          borderSide: BorderSide(color: Color(0xFF004d61)), 
+        ),
         hintText: widget.hint,
         suffixIcon: IconButton(
           icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
