@@ -9,9 +9,10 @@ class FirebaseLogoutUtil {
     try {
       Navigator.of(context).pop();
       await auth.signOut();
+      if (!context.mounted) return;
       Navigator.pushReplacementNamed(context, Routes.login);
     } catch (e) {
-      print('Erro ao fazer logout: $e');
+      rethrow;
     }
   }
 }

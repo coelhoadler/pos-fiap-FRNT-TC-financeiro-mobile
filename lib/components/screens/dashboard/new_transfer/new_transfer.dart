@@ -36,9 +36,13 @@ class _NewTransferScreenState extends State<NewTransferScreen> {
       String userId = _auth.currentUser!.uid;
 
       // Remove currency formatting and parse to double for comparison
-      double value = double.tryParse(
-        _valueController.text.replaceAll(RegExp(r'[^\d,]'), '').replaceAll(',', '.')
-      ) ?? 0.0;
+      double value =
+          double.tryParse(
+            _valueController.text
+                .replaceAll(RegExp(r'[^\d,]'), '')
+                .replaceAll(',', '.'),
+          ) ??
+          0.0;
       if (value == 0.0) {
         ToastUtil.showToast(context, 'O valor deve ser maior que zero.');
         return;
@@ -64,7 +68,7 @@ class _NewTransferScreenState extends State<NewTransferScreen> {
         isButtonEnabled = false;
       });
     } catch (e) {
-      print('>>> Erro ao concluir transação: $e');
+      rethrow;
     }
   }
 

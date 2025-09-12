@@ -15,7 +15,7 @@ class Extract extends StatefulWidget {
   final bool uploadImage;
   final String titleComponent;
   final DateTime? startDate;
-  final DateTime? endDate; 
+  final DateTime? endDate;
 
   const Extract({
     super.key,
@@ -47,7 +47,7 @@ class _ExtractState extends State<Extract> {
     });
   }
 
- Stream<QuerySnapshot> _getTransactionsStream() {
+  Stream<QuerySnapshot> _getTransactionsStream() {
     final user = _auth.currentUser;
     if (user == null) {
       return const Stream.empty();
@@ -98,7 +98,6 @@ class _ExtractState extends State<Extract> {
 
       ToastUtil.showToast(context, 'O upload da imagem foi concluído.');
     } catch (e) {
-      print('>>> Erro ao realizar upload: $e');
       ToastUtil.showToast(context, 'Erro ao realizar upload da imagem.');
     }
   }

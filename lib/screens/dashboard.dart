@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:pos_fiap_fin_mobile/components/screens/dashboard/charts/pie/pie_chart.dart';
@@ -20,6 +21,7 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // ---- AQUI SÃO OS ESTADOS PARA REALIZAR OS FILTROS
   TransferFilterType _filterType = TransferFilterType.none;
@@ -29,6 +31,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   DateTime? _startDate;
   DateTime? _endDate;
+  bool hasTransactions = false;
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> transactionsData = [];
 
   @override
   void initState() {
@@ -40,6 +44,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
       }
     });
     _applyFilter();
+    _getAllTransactions();
+  }
+
+  void _getAllTransactions() {
+    _firestore
+        .collection('users')
+        .doc(_auth.currentUser!.uid)
+        .collection('transacoes')
+        .snapshots()
+        .listen((snapshot) {
+          setState(() {
+            hasTransactions = snapshot.docs.isNotEmpty;
+            transactionsData = snapshot.docs;
+          });
+        });
   }
 
   // ------ HELPERS DOS FILTROS
@@ -194,7 +213,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Balance(),
-            PieChartSample2(),
+            if (hasTransactions)
+              TransactionsPieChart(transactionsData: transactionsData),
             NewTransferScreen(),
 
             // ---------------- FILTRO ----------------

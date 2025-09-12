@@ -1,16 +1,24 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:pos_fiap_fin_mobile/components/screens/dashboard/charts/pie/pie_indicator.dart';
 
-class PieChartSample2 extends StatefulWidget {
-  const PieChartSample2({super.key});
+class TransactionsPieChart extends StatefulWidget {
+  const TransactionsPieChart({super.key, required this.transactionsData});
+
+  final List<QueryDocumentSnapshot<Map<String, dynamic>>> transactionsData;
 
   @override
   State<StatefulWidget> createState() => PieChart2State();
 }
 
-class PieChart2State extends State {
+class PieChart2State extends State<TransactionsPieChart> {
   int touchedIndex = -1;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
