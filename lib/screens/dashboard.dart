@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:pos_fiap_fin_mobile/components/screens/dashboard/charts/pie/pie_chart.dart';
 import 'package:pos_fiap_fin_mobile/components/screens/dashboard/new_transfer/new_transfer.dart';
 import 'package:pos_fiap_fin_mobile/components/ui/firebase_logout_util.dart';
 import 'package:pos_fiap_fin_mobile/components/ui/header/header.dart';
@@ -65,10 +66,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
       case TransferFilterType.range:
         if (_selectedRange != null) {
           final start = DateTime(
-              _selectedRange!.start.year, _selectedRange!.start.month, _selectedRange!.start.day);
+            _selectedRange!.start.year,
+            _selectedRange!.start.month,
+            _selectedRange!.start.day,
+          );
           final endExclusive = DateTime(
-              _selectedRange!.end.year, _selectedRange!.end.month, _selectedRange!.end.day)
-              .add(const Duration(days: 1));
+            _selectedRange!.end.year,
+            _selectedRange!.end.month,
+            _selectedRange!.end.day,
+          ).add(const Duration(days: 1));
           setState(() {
             _startDate = start;
             _endDate = endExclusive;
@@ -87,34 +93,44 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   List<DropdownMenuItem<int>> _monthItems() {
     const months = [
-      'Janeiro','Fevereiro','Março','Abril','Maio','Junho',
-      'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'
+      'Janeiro',
+      'Fevereiro',
+      'Março',
+      'Abril',
+      'Maio',
+      'Junho',
+      'Julho',
+      'Agosto',
+      'Setembro',
+      'Outubro',
+      'Novembro',
+      'Dezembro',
     ];
     return List.generate(12, (i) {
       final m = i + 1;
-      return DropdownMenuItem<int>(
-        value: m,
-        child: Text('${months[i]} ($m)'),
-      );
+      return DropdownMenuItem<int>(value: m, child: Text('${months[i]} ($m)'));
     });
   }
 
   List<DropdownMenuItem<int>> _yearItems() {
     final current = DateTime.now().year;
     final years = List.generate(6, (i) => current - i);
-    return years.map((y) => DropdownMenuItem<int>(value: y, child: Text(y.toString()))).toList();
+    return years
+        .map((y) => DropdownMenuItem<int>(value: y, child: Text(y.toString())))
+        .toList();
   }
 
   Future<void> _pickRange() async {
     final now = DateTime.now();
     final firstDay = DateTime(now.year - 5, 1, 1);
-    final lastDay  = DateTime(now.year + 1, 12, 31);
+    final lastDay = DateTime(now.year + 1, 12, 31);
 
     final picked = await showDateRangePicker(
       context: context,
       firstDate: firstDay,
       lastDate: lastDay,
-      initialDateRange: _selectedRange ??
+      initialDateRange:
+          _selectedRange ??
           DateTimeRange(start: DateTime(now.year, now.month, 1), end: now),
       saveText: 'Aplicar',
       helpText: 'Selecione o período',
@@ -177,8 +193,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            const Balance(),
-            const NewTransferScreen(),
+            Balance(),
+            PieChartSample2(),
+            NewTransferScreen(),
 
             // ---------------- FILTRO ----------------
             Padding(
@@ -189,7 +206,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Filtros do Extrato', style: TextStyle(fontWeight: FontWeight.bold)),
+                      const Text(
+                        'Filtros do Extrato',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       const SizedBox(height: 8),
 
                       Wrap(
@@ -271,13 +291,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               label: Text(
                                 _selectedRange == null
                                     ? 'Selecionar período'
-                                    : 'Período: ${_selectedRange!.start.day.toString().padLeft(2,'0')}/'
-                                      '${_selectedRange!.start.month.toString().padLeft(2,'0')}/'
-                                      '${_selectedRange!.start.year} '
-                                      '→ '
-                                      '${_selectedRange!.end.day.toString().padLeft(2,'0')}/'
-                                      '${_selectedRange!.end.month.toString().padLeft(2,'0')}/'
-                                      '${_selectedRange!.end.year}',
+                                    : 'Período: ${_selectedRange!.start.day.toString().padLeft(2, '0')}/'
+                                          '${_selectedRange!.start.month.toString().padLeft(2, '0')}/'
+                                          '${_selectedRange!.start.year} '
+                                          '→ '
+                                          '${_selectedRange!.end.day.toString().padLeft(2, '0')}/'
+                                          '${_selectedRange!.end.month.toString().padLeft(2, '0')}/'
+                                          '${_selectedRange!.end.year}',
                               ),
                             ),
                           ],

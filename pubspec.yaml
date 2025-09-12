@@ -39,6 +39,7 @@ dependencies:
   flutter_multi_formatter: ^2.13.10
   fluttertoast: ^8.2.4
   flutter_secure_storage: ^9.2.4
+  fl_chart: ^1.1.0
 
 dev_dependencies:
   flutter_test:
