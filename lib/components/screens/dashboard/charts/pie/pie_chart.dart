@@ -54,6 +54,18 @@ class PieChartState extends State<TransactionsPieChart> {
     return groupTotal;
   }
 
+  Color getCollorForCategory(String category) {
+    if (category == 'DOC/TED') {
+      return Colors.blueAccent;
+    } else if (category == 'Câmbio de moeda') {
+      return Colors.yellowAccent;
+    } else if (category == 'Empréstimo e Financiamento') {
+      return Colors.purpleAccent;
+    } else {
+      return Colors.grey; // Categoria não definida
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
@@ -89,28 +101,21 @@ class PieChartState extends State<TransactionsPieChart> {
               ),
             ),
           ),
-          const Column(
+          Column(
             mainAxisAlignment: MainAxisAlignment.end,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Indicator(
-                color: Colors.blueAccent,
-                text: 'DOC/TED',
-                isSquare: true,
-              ),
-              SizedBox(height: 4),
-              Indicator(
-                color: Colors.yellowAccent,
-                text: 'Câmbio de moeda',
-                isSquare: true,
-              ),
-              SizedBox(height: 4),
-              Indicator(
-                color: Colors.purpleAccent,
-                text: 'Empréstimo e fin...',
-                isSquare: true,
-              ),
-              SizedBox(height: 18),
+              ...myCategories.entries.map((entry) {
+                Color color = getCollorForCategory(entry.key.toString());
+
+                return Indicator(
+                  color: color,
+                  text: entry.key,
+                  isSquare: false,
+                );
+              }),
+
+              SizedBox(height: 28),
             ],
           ),
           const SizedBox(width: 28),
@@ -132,7 +137,9 @@ class PieChartState extends State<TransactionsPieChart> {
           );
 
           return PieChartSectionData(
-            color: Colors.blueAccent,
+            color: getCollorForCategory(
+              myCategories.entries.elementAt(0).key.toString(),
+            ),
             value: group0Total,
             title:
                 '${(group0Total / totalValueOfTransactions * 100).toStringAsFixed(2)}%',
@@ -150,7 +157,9 @@ class PieChartState extends State<TransactionsPieChart> {
           );
 
           return PieChartSectionData(
-            color: Colors.yellowAccent,
+            color: getCollorForCategory(
+              myCategories.entries.elementAt(1).key.toString(),
+            ),
             value: group1Total,
             title:
                 '${(group1Total / totalValueOfTransactions * 100).toStringAsFixed(2)}%',
@@ -168,7 +177,9 @@ class PieChartState extends State<TransactionsPieChart> {
           );
 
           return PieChartSectionData(
-            color: Colors.purpleAccent,
+            color: getCollorForCategory(
+              myCategories.entries.elementAt(2).key.toString(),
+            ),
             value: group2Total,
             title:
                 '${(group2Total / totalValueOfTransactions * 100).toStringAsFixed(2)}%',

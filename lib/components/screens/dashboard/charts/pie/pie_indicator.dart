@@ -15,6 +15,10 @@ class Indicator extends StatelessWidget {
   final double size;
   final Color? textColor;
 
+  String truncateWithEllipsis(int cutoff, String text) {
+    return (text.length <= cutoff) ? text : '${text.substring(0, cutoff)}...';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -29,7 +33,7 @@ class Indicator extends StatelessWidget {
         ),
         const SizedBox(width: 4),
         Text(
-          text,
+          truncateWithEllipsis(16, text),
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.bold,
