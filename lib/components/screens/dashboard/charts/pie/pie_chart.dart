@@ -23,6 +23,7 @@ class PieChartState extends State<TransactionsPieChart> {
     super.initState();
 
     // Calcular o valor total das transações
+
     for (var transaction in widget.transactionsData) {
       String onlyNumbers = transaction.data()['valor'].toString().replaceAll(
         RegExp(r'\D'),
@@ -32,15 +33,26 @@ class PieChartState extends State<TransactionsPieChart> {
       totalValue += valorDouble;
     }
 
-    print('>>> total value: ${totalValue / 100}');
-
     grouped = groupBy(
       widget.transactionsData,
       (item) => item.data()['descricao'],
     );
+  }
 
-    print('>>> grouped: $grouped');
-    print('>>> grouped 1: ${grouped[0]?.first}');
+  double getTotalValue(
+    MapEntry<dynamic, List<QueryDocumentSnapshot<Map<String, dynamic>>>>
+    groupEntry,
+  ) {
+    double groupTotal = groupEntry.value.fold(0, (sum, item) {
+      String onlyNumbers = item.data()['valor'].toString().replaceAll(
+        RegExp(r'\D'),
+        '',
+      );
+      double valorDouble = double.tryParse(onlyNumbers) ?? 0;
+      return sum + valorDouble;
+    });
+
+    return groupTotal;
   }
 
   @override
@@ -116,21 +128,7 @@ class PieChartState extends State<TransactionsPieChart> {
       const shadows = [Shadow(color: Colors.black, blurRadius: 2)];
       switch (i) {
         case 0:
-
-          // posso pegar os valores do grupo 0 e somar
-          double group0Total =
-              grouped[0]?.fold(0, (sum, item) {
-                print('>>> $sum');
-                String onlyNumbers = item.data()['valor'].toString().replaceAll(
-                  RegExp(r'\D'),
-                  '',
-                );
-                double valorDouble = double.tryParse(onlyNumbers) ?? 0;
-                return sum! + valorDouble;
-              }) ??
-              0;
-
-          print('>>> group0Total: $group0Total');
+          double group0Total = getTotalValue(grouped.entries.elementAt(0));
 
           return PieChartSectionData(
             color: Colors.blueAccent,
@@ -145,10 +143,12 @@ class PieChartState extends State<TransactionsPieChart> {
             ),
           );
         case 1:
+          double group1Total = getTotalValue(grouped.entries.elementAt(1));
+
           return PieChartSectionData(
             color: Colors.yellowAccent,
-            value: 30,
-            title: '30%',
+            value: group1Total,
+            title: '${(group1Total / totalValue * 100).toStringAsFixed(2)}%',
             radius: radius,
             titleStyle: TextStyle(
               fontSize: fontSize,
@@ -158,10 +158,12 @@ class PieChartState extends State<TransactionsPieChart> {
             ),
           );
         case 2:
+          double group2Total = getTotalValue(grouped.entries.elementAt(2));
+
           return PieChartSectionData(
             color: Colors.purpleAccent,
-            value: 30,
-            title: '30%',
+            value: group2Total,
+            title: '${(group2Total / totalValue * 100).toStringAsFixed(2)}%',
             radius: radius,
             titleStyle: TextStyle(
               fontSize: fontSize,
