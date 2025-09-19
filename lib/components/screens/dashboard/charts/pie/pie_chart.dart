@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/collection.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:pos_fiap_fin_mobile/components/screens/dashboard/charts/pie/pie_indicator.dart';
@@ -14,17 +15,38 @@ class TransactionsPieChart extends StatefulWidget {
 
 class PieChartState extends State<TransactionsPieChart> {
   int touchedIndex = -1;
+  double totalValue = 0;
+  Map<dynamic, List<QueryDocumentSnapshot<Map<String, dynamic>>>> grouped = {};
 
   @override
   void initState() {
     super.initState();
-    print('>>> transactionsData: ${widget.transactionsData}');
+
+    // Calcular o valor total das transações
+    for (var transaction in widget.transactionsData) {
+      String onlyNumbers = transaction.data()['valor'].toString().replaceAll(
+        RegExp(r'\D'),
+        '',
+      );
+      double valorDouble = double.tryParse(onlyNumbers) ?? 0;
+      totalValue += valorDouble;
+    }
+
+    print('>>> total value: ${totalValue / 100}');
+
+    grouped = groupBy(
+      widget.transactionsData,
+      (item) => item.data()['descricao'],
+    );
+
+    print('>>> grouped: $grouped');
+    print('>>> grouped 1: ${grouped[0]?.first}');
   }
 
   @override
   Widget build(BuildContext context) {
     return AspectRatio(
-      aspectRatio: 1.3,
+      aspectRatio: 1.6,
       child: Row(
         children: <Widget>[
           const SizedBox(height: 18),
@@ -49,8 +71,8 @@ class PieChartState extends State<TransactionsPieChart> {
                     },
                   ),
                   borderData: FlBorderData(show: false),
-                  sectionsSpace: 0,
-                  centerSpaceRadius: 40,
+                  sectionsSpace: 5,
+                  centerSpaceRadius: 30,
                   sections: showingSections(),
                 ),
               ),
@@ -74,13 +96,7 @@ class PieChartState extends State<TransactionsPieChart> {
               SizedBox(height: 4),
               Indicator(
                 color: Colors.purpleAccent,
-                text: 'Emprés... e Fin...',
-                isSquare: true,
-              ),
-              SizedBox(height: 4),
-              Indicator(
-                color: Colors.greenAccent,
-                text: 'Fourth',
+                text: 'Empréstimo e fin...',
                 isSquare: true,
               ),
               SizedBox(height: 18),
@@ -93,17 +109,33 @@ class PieChartState extends State<TransactionsPieChart> {
   }
 
   List<PieChartSectionData> showingSections() {
-    return List.generate(4, (i) {
+    return List.generate(grouped.length, (i) {
       final isTouched = i == touchedIndex;
       final fontSize = isTouched ? 25.0 : 16.0;
       final radius = isTouched ? 60.0 : 50.0;
       const shadows = [Shadow(color: Colors.black, blurRadius: 2)];
       switch (i) {
         case 0:
+
+          // posso pegar os valores do grupo 0 e somar
+          double group0Total =
+              grouped[0]?.fold(0, (sum, item) {
+                print('>>> $sum');
+                String onlyNumbers = item.data()['valor'].toString().replaceAll(
+                  RegExp(r'\D'),
+                  '',
+                );
+                double valorDouble = double.tryParse(onlyNumbers) ?? 0;
+                return sum! + valorDouble;
+              }) ??
+              0;
+
+          print('>>> group0Total: $group0Total');
+
           return PieChartSectionData(
             color: Colors.blueAccent,
-            value: 40,
-            title: '40%',
+            value: group0Total,
+            title: '${(group0Total / totalValue * 100).toStringAsFixed(2)}%',
             radius: radius,
             titleStyle: TextStyle(
               fontSize: fontSize,
@@ -128,21 +160,8 @@ class PieChartState extends State<TransactionsPieChart> {
         case 2:
           return PieChartSectionData(
             color: Colors.purpleAccent,
-            value: 15,
-            title: '15%',
-            radius: radius,
-            titleStyle: TextStyle(
-              fontSize: fontSize,
-              fontWeight: FontWeight.bold,
-              color: Colors.black,
-              shadows: shadows,
-            ),
-          );
-        case 3:
-          return PieChartSectionData(
-            color: Colors.greenAccent,
-            value: 15,
-            title: '15%',
+            value: 30,
+            title: '30%',
             radius: radius,
             titleStyle: TextStyle(
               fontSize: fontSize,

@@ -36,6 +36,7 @@ class BarChartSample2State extends State<BarChartSample2> {
       barGroup4,
       barGroup5,
       barGroup6,
+      barGroup7,
     ];
 
     rawBarGroups = items;
