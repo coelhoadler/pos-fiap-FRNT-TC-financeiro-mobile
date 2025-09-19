@@ -16,6 +16,7 @@ class Extract extends StatefulWidget {
   final String titleComponent;
   final DateTime? startDate;
   final DateTime? endDate;
+  final int? limit;
 
   const Extract({
     super.key,
@@ -23,6 +24,7 @@ class Extract extends StatefulWidget {
     this.titleComponent = '',
     this.startDate,
     this.endDate,
+    this.limit,
   });
 
   @override
@@ -56,7 +58,8 @@ class _ExtractState extends State<Extract> {
     final base = _firestore
         .collection('users')
         .doc(user.uid)
-        .collection('transacoes');
+        .collection('transacoes')
+        .limit(widget.limit ?? 20);
 
     Query q = base;
 
@@ -290,7 +293,9 @@ class _ExtractState extends State<Extract> {
         await _storage.ref(imagePathUrl).delete();
       }
 
-      ToastUtil.showToast(context, 'Transação excluída com sucesso.');
+      if (mounted) {
+        ToastUtil.showToast(context, 'Transação excluída com sucesso.');
+      }
     }
   }
 

@@ -110,7 +110,7 @@ class PieChartState extends State<TransactionsPieChart> {
 
                 return Indicator(
                   color: color,
-                  text: entry.key,
+                  text: entry.key.isNotEmpty ? entry.key : 'Sem descrição',
                   isSquare: false,
                 );
               }),

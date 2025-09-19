@@ -15,7 +15,7 @@ class _NewTransferScreenState extends State<NewTransferScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final TextEditingController _valueController = TextEditingController(
-    text: "R\$ 0,00",
+    text: "R\$ ",
   );
 
   bool isButtonEnabled = false;
@@ -67,9 +67,7 @@ class _NewTransferScreenState extends State<NewTransferScreen> {
         _valueController.text = "R\$ 0,00";
         isButtonEnabled = false;
       });
-    } catch (e) {
-      rethrow;
-    }
+    } catch (e) {}
   }
 
   @override

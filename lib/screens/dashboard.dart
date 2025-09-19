@@ -20,6 +20,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final int extractLimit = 5;
 
   bool hasTransactions = false;
   List<QueryDocumentSnapshot<Map<String, dynamic>>> transactionsData = [];
@@ -95,7 +96,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
             if (hasTransactions)
               TransactionsPieChart(transactionsData: transactionsData),
             NewTransferScreen(),
-            Extract(titleComponent: 'Extrato'),
+            Extract(titleComponent: 'Extrato', limit: extractLimit),
+            if (transactionsData.isNotEmpty)
+              TextButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, Routes.transfers);
+                },
+                child: Text('Listar todas as transações'),
+              ),
+            SizedBox(height: 15),
           ],
         ),
       ),
