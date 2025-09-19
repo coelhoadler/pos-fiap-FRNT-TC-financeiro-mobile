@@ -116,7 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
         titleTextStyle: TextStyle(color: Colors.white, fontSize: 24),
         centerTitle: true,
         title: const Text('Login'),
-        toolbarHeight: 100,
+        toolbarHeight: 60,
         automaticallyImplyLeading: false,
       ),
       body: Padding(
@@ -157,7 +157,7 @@ class _LoginScreenState extends State<LoginScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 _isLoading
-                    ? CircularProgressIndicator(color: Color(0xFF004d61),)
+                    ? CircularProgressIndicator(color: Color(0xFF004d61))
                     : Row(
                         children: [
                           ElevatedButton(
@@ -189,12 +189,6 @@ class _LoginScreenState extends State<LoginScreen> {
                                 borderRadius: BorderRadius.circular(25),
                               ),
                               shadowColor: Color(0xFF004d61),
-                              elevation: 2,
-                              alignment: Alignment(0, 20),
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 30,
-                                vertical: 12,
-                              ),
                               textStyle: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,

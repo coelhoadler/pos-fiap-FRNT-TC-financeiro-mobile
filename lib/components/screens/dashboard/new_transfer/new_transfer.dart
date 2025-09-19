@@ -15,7 +15,7 @@ class _NewTransferScreenState extends State<NewTransferScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final TextEditingController _valueController = TextEditingController(
-    text: "R\$ 0,00",
+    text: "R\$ ",
   );
 
   bool isButtonEnabled = false;
@@ -31,14 +31,18 @@ class _NewTransferScreenState extends State<NewTransferScreen> {
     });
   }
 
-  _createTransaction() async {
+  Future<void> _createTransaction() async {
     try {
       String userId = _auth.currentUser!.uid;
 
       // Remove currency formatting and parse to double for comparison
-      double value = double.tryParse(
-        _valueController.text.replaceAll(RegExp(r'[^\d,]'), '').replaceAll(',', '.')
-      ) ?? 0.0;
+      double value =
+          double.tryParse(
+            _valueController.text
+                .replaceAll(RegExp(r'[^\d,]'), '')
+                .replaceAll(',', '.'),
+          ) ??
+          0.0;
       if (value == 0.0) {
         ToastUtil.showToast(context, 'O valor deve ser maior que zero.');
         return;
@@ -63,9 +67,7 @@ class _NewTransferScreenState extends State<NewTransferScreen> {
         _valueController.text = "R\$ 0,00";
         isButtonEnabled = false;
       });
-    } catch (e) {
-      print('>>> Erro ao concluir transação: $e');
-    }
+    } catch (e) {}
   }
 
   @override

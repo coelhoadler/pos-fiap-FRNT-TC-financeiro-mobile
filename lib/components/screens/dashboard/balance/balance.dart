@@ -30,7 +30,6 @@ class _BalanceState extends State<Balance> {
           .orderBy('data', descending: true)
           .snapshots();
     } catch (e) {
-      print('>>> Erro ao configurar stream de transações: $e');
       rethrow;
     }
   }

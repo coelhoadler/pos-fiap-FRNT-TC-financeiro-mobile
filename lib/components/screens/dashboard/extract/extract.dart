@@ -15,7 +15,8 @@ class Extract extends StatefulWidget {
   final bool uploadImage;
   final String titleComponent;
   final DateTime? startDate;
-  final DateTime? endDate; 
+  final DateTime? endDate;
+  final int? limit;
 
   const Extract({
     super.key,
@@ -23,6 +24,7 @@ class Extract extends StatefulWidget {
     this.titleComponent = '',
     this.startDate,
     this.endDate,
+    this.limit,
   });
 
   @override
@@ -47,7 +49,7 @@ class _ExtractState extends State<Extract> {
     });
   }
 
- Stream<QuerySnapshot> _getTransactionsStream() {
+  Stream<QuerySnapshot> _getTransactionsStream() {
     final user = _auth.currentUser;
     if (user == null) {
       return const Stream.empty();
@@ -56,7 +58,8 @@ class _ExtractState extends State<Extract> {
     final base = _firestore
         .collection('users')
         .doc(user.uid)
-        .collection('transacoes');
+        .collection('transacoes')
+        .limit(widget.limit ?? 20);
 
     Query q = base;
 
@@ -98,7 +101,6 @@ class _ExtractState extends State<Extract> {
 
       ToastUtil.showToast(context, 'O upload da imagem foi concluído.');
     } catch (e) {
-      print('>>> Erro ao realizar upload: $e');
       ToastUtil.showToast(context, 'Erro ao realizar upload da imagem.');
     }
   }
@@ -291,7 +293,9 @@ class _ExtractState extends State<Extract> {
         await _storage.ref(imagePathUrl).delete();
       }
 
-      ToastUtil.showToast(context, 'Transação excluída com sucesso.');
+      if (mounted) {
+        ToastUtil.showToast(context, 'Transação excluída com sucesso.');
+      }
     }
   }
 

@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:pos_fiap_fin_mobile/components/screens/dashboard/charts/pie/pie_chart.dart';
 import 'package:pos_fiap_fin_mobile/components/screens/dashboard/new_transfer/new_transfer.dart';
 import 'package:pos_fiap_fin_mobile/components/ui/firebase_logout_util.dart';
 import 'package:pos_fiap_fin_mobile/components/ui/header/header.dart';
@@ -17,6 +19,11 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final int extractLimit = 5;
+
+  bool hasTransactions = false;
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> transactionsData = [];
 
   @override
   void initState() {
@@ -27,6 +34,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
         return;
       }
     });
+
+    _getAllTransactions();
+  }
+
+  void _getAllTransactions() {
+    _firestore
+        .collection('users')
+        .doc(_auth.currentUser!.uid)
+        .collection('transacoes')
+        .snapshots()
+        .listen((snapshot) {
+          setState(() {
+            hasTransactions = snapshot.docs.isNotEmpty;
+            transactionsData = snapshot.docs;
+          });
+        });
   }
 
   @override
@@ -65,17 +88,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
       ),
-      body: const SingleChildScrollView(
+      body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Balance(),
+            if (hasTransactions)
+              TransactionsPieChart(transactionsData: transactionsData),
             NewTransferScreen(),
-
-            // Extrato simples, sem filtros (usa padrão interno do componente)
-            Extract(
-              titleComponent: 'Extrato',
-            ),
+            Extract(titleComponent: 'Extrato', limit: extractLimit),
+            if (transactionsData.isNotEmpty)
+              TextButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, Routes.transfers);
+                },
+                child: Text('Listar todas as transações'),
+              ),
+            SizedBox(height: 15),
           ],
         ),
       ),
