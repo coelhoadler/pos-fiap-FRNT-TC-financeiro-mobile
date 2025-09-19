@@ -31,7 +31,7 @@ class _NewTransferScreenState extends State<NewTransferScreen> {
     });
   }
 
-  _createTransaction() async {
+  Future<void> _createTransaction() async {
     try {
       String userId = _auth.currentUser!.uid;
 
