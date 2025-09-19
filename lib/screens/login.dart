@@ -116,7 +116,7 @@ class _LoginScreenState extends State<LoginScreen> {
         titleTextStyle: TextStyle(color: Colors.white, fontSize: 24),
         centerTitle: true,
         title: const Text('Login'),
-        toolbarHeight: 100,
+        toolbarHeight: 60,
         automaticallyImplyLeading: false,
       ),
       body: Padding(

@@ -9,15 +9,16 @@ class TransactionsPieChart extends StatefulWidget {
   final List<QueryDocumentSnapshot<Map<String, dynamic>>> transactionsData;
 
   @override
-  State<StatefulWidget> createState() => PieChart2State();
+  State<StatefulWidget> createState() => PieChartState();
 }
 
-class PieChart2State extends State<TransactionsPieChart> {
+class PieChartState extends State<TransactionsPieChart> {
   int touchedIndex = -1;
 
   @override
   void initState() {
     super.initState();
+    print('>>> transactionsData: ${widget.transactionsData}');
   }
 
   @override
@@ -60,19 +61,29 @@ class PieChart2State extends State<TransactionsPieChart> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Indicator(
-                color: Colors.blue,
-                text: 'Câmbio de moe...', // câmbio de moedas
+                color: Colors.blueAccent,
+                text: 'TED/DOC',
                 isSquare: true,
               ),
-              SizedBox(height: 4),
-              Indicator(color: Colors.yellow, text: 'DOC/TED', isSquare: true),
               SizedBox(height: 4),
               Indicator(
-                color: Colors.purple,
-                text: 'Emprés. e financ.', // empréstimos e financiamentos
+                color: Colors.yellowAccent,
+                text: 'Câmbio de moeda',
                 isSquare: true,
               ),
               SizedBox(height: 4),
+              Indicator(
+                color: Colors.purpleAccent,
+                text: 'Emprés... e Fin...',
+                isSquare: true,
+              ),
+              SizedBox(height: 4),
+              Indicator(
+                color: Colors.greenAccent,
+                text: 'Fourth',
+                isSquare: true,
+              ),
+              SizedBox(height: 18),
             ],
           ),
           const SizedBox(width: 28),
@@ -90,7 +101,7 @@ class PieChart2State extends State<TransactionsPieChart> {
       switch (i) {
         case 0:
           return PieChartSectionData(
-            color: Colors.blue,
+            color: Colors.blueAccent,
             value: 40,
             title: '40%',
             radius: radius,
@@ -103,7 +114,7 @@ class PieChart2State extends State<TransactionsPieChart> {
           );
         case 1:
           return PieChartSectionData(
-            color: Colors.yellow,
+            color: Colors.yellowAccent,
             value: 30,
             title: '30%',
             radius: radius,
@@ -116,7 +127,7 @@ class PieChart2State extends State<TransactionsPieChart> {
           );
         case 2:
           return PieChartSectionData(
-            color: Colors.purple,
+            color: Colors.purpleAccent,
             value: 15,
             title: '15%',
             radius: radius,
@@ -129,7 +140,7 @@ class PieChart2State extends State<TransactionsPieChart> {
           );
         case 3:
           return PieChartSectionData(
-            color: Colors.green,
+            color: Colors.greenAccent,
             value: 15,
             title: '15%',
             radius: radius,

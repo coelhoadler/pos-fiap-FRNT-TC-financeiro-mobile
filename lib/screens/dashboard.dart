@@ -21,6 +21,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  bool hasTransactions = false;
+  List<QueryDocumentSnapshot<Map<String, dynamic>>> transactionsData = [];
+
   @override
   void initState() {
     super.initState();
@@ -30,6 +33,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
         return;
       }
     });
+
+    _getAllTransactions();
+  }
+
+  void _getAllTransactions() {
+    _firestore
+        .collection('users')
+        .doc(_auth.currentUser!.uid)
+        .collection('transacoes')
+        .snapshots()
+        .listen((snapshot) {
+          setState(() {
+            hasTransactions = snapshot.docs.isNotEmpty;
+            transactionsData = snapshot.docs;
+          });
+        });
   }
 
   @override
@@ -68,13 +87,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ],
         ),
       ),
-      body: const SingleChildScrollView(
+      body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Balance(),
+            if (hasTransactions)
+              TransactionsPieChart(transactionsData: transactionsData),
             NewTransferScreen(),
-            // Extrato simples, sem filtros (usa padrão interno do componente)
             Extract(titleComponent: 'Extrato'),
           ],
         ),
