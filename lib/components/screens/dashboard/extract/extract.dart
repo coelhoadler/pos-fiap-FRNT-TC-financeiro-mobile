@@ -105,7 +105,7 @@ class _ExtractState extends State<Extract> {
     }
   }
 
-  _goToImageGallery(String? transactionId, String imagePathUrl) {
+  void _goToImageGallery(String? transactionId, String imagePathUrl) {
     Navigator.pushNamed(
       context,
       Routes.imageGallery,

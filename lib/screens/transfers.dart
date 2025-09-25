@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pos_fiap_fin_mobile/components/ui/firebase_logout_util.dart';
-import '../components/screens/dashboard/extract/extract.dart';
+import '../components/screens/dashboard/extract/extract_sliver.dart';
 import '../components/ui/header/header.dart' show Header;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pos_fiap_fin_mobile/utils/routes.dart';
@@ -26,6 +26,9 @@ class _TransfersScreenState extends State<TransfersScreen> {
   DateTime? _startDate;
   DateTime? _endDate;
 
+  final ScrollController _scrollController = ScrollController();
+  int _limit = 8;
+
   @override
   void initState() {
     super.initState();
@@ -36,6 +39,17 @@ class _TransfersScreenState extends State<TransfersScreen> {
       }
     });
     _applyFilter();
+    _scrollController.addListener(_onScroll);
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      setState(() {
+        _limit += 1;
+      });
+    }
   }
 
   // ------ HELPERS DOS FILTROS
@@ -62,10 +76,15 @@ class _TransfersScreenState extends State<TransfersScreen> {
       case TransferFilterType.range:
         if (_selectedRange != null) {
           final start = DateTime(
-              _selectedRange!.start.year, _selectedRange!.start.month, _selectedRange!.start.day);
+            _selectedRange!.start.year,
+            _selectedRange!.start.month,
+            _selectedRange!.start.day,
+          );
           final endExclusive = DateTime(
-                  _selectedRange!.end.year, _selectedRange!.end.month, _selectedRange!.end.day)
-              .add(const Duration(days: 1));
+            _selectedRange!.end.year,
+            _selectedRange!.end.month,
+            _selectedRange!.end.day,
+          ).add(const Duration(days: 1));
           setState(() {
             _startDate = start;
             _endDate = endExclusive;
@@ -84,22 +103,31 @@ class _TransfersScreenState extends State<TransfersScreen> {
 
   List<DropdownMenuItem<int>> _monthItems() {
     const months = [
-      'Janeiro','Fevereiro','Março','Abril','Maio','Junho',
-      'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'
+      'Janeiro',
+      'Fevereiro',
+      'Março',
+      'Abril',
+      'Maio',
+      'Junho',
+      'Julho',
+      'Agosto',
+      'Setembro',
+      'Outubro',
+      'Novembro',
+      'Dezembro',
     ];
     return List.generate(12, (i) {
       final m = i + 1;
-      return DropdownMenuItem<int>(
-        value: m,
-        child: Text('${months[i]} ($m)'),
-      );
+      return DropdownMenuItem<int>(value: m, child: Text('${months[i]} ($m)'));
     });
   }
 
   List<DropdownMenuItem<int>> _yearItems() {
     final current = DateTime.now().year;
     final years = List.generate(6, (i) => current - i);
-    return years.map((y) => DropdownMenuItem<int>(value: y, child: Text(y.toString()))).toList();
+    return years
+        .map((y) => DropdownMenuItem<int>(value: y, child: Text(y.toString())))
+        .toList();
   }
 
   Future<void> _pickRange() async {
@@ -111,7 +139,8 @@ class _TransfersScreenState extends State<TransfersScreen> {
       context: context,
       firstDate: firstDay,
       lastDate: lastDay,
-      initialDateRange: _selectedRange ??
+      initialDateRange:
+          _selectedRange ??
           DateTimeRange(start: DateTime(now.year, now.month, 1), end: now),
       saveText: 'Aplicar',
       helpText: 'Selecione o período',
@@ -135,18 +164,24 @@ class _TransfersScreenState extends State<TransfersScreen> {
   }
 
   @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: Header(
         context: context,
         displayName: _auth.currentUser?.displayName ?? 'Usuário Desconhecido',
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            // ---------------- FILTRO ----------------
-            Padding(
+      body: CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
               child: Card(
                 child: Padding(
@@ -154,8 +189,10 @@ class _TransfersScreenState extends State<TransfersScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Filtros do Extrato',
-                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      const Text(
+                        'Filtros do Extrato',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       const SizedBox(height: 8),
                       Wrap(
                         spacing: 12,
@@ -191,7 +228,6 @@ class _TransfersScreenState extends State<TransfersScreen> {
                               _applyFilter();
                             },
                           ),
-
                           if (_filterType == TransferFilterType.month) ...[
                             DropdownButton<int>(
                               value: _selectedMonth,
@@ -212,7 +248,6 @@ class _TransfersScreenState extends State<TransfersScreen> {
                               },
                             ),
                           ],
-
                           if (_filterType == TransferFilterType.year) ...[
                             DropdownButton<int>(
                               value: _selectedYear,
@@ -224,7 +259,6 @@ class _TransfersScreenState extends State<TransfersScreen> {
                               },
                             ),
                           ],
-
                           if (_filterType == TransferFilterType.range) ...[
                             ElevatedButton.icon(
                               onPressed: _pickRange,
@@ -233,16 +267,15 @@ class _TransfersScreenState extends State<TransfersScreen> {
                                 _selectedRange == null
                                     ? 'Selecionar período'
                                     : 'Período: '
-                                      '${_selectedRange!.start.day.toString().padLeft(2, '0')}/'
-                                      '${_selectedRange!.start.month.toString().padLeft(2, '0')}/'
-                                      '${_selectedRange!.start.year} → '
-                                      '${_selectedRange!.end.day.toString().padLeft(2, '0')}/'
-                                      '${_selectedRange!.end.month.toString().padLeft(2, '0')}/'
-                                      '${_selectedRange!.end.year}',
+                                          '${_selectedRange!.start.day.toString().padLeft(2, '0')}/'
+                                          '${_selectedRange!.start.month.toString().padLeft(2, '0')}/'
+                                          '${_selectedRange!.start.year} → '
+                                          '${_selectedRange!.end.day.toString().padLeft(2, '0')}/'
+                                          '${_selectedRange!.end.month.toString().padLeft(2, '0')}/'
+                                          '${_selectedRange!.end.year}',
                               ),
                             ),
                           ],
-
                           TextButton.icon(
                             onPressed: _clearFilters,
                             icon: const Icon(Icons.clear),
@@ -255,16 +288,17 @@ class _TransfersScreenState extends State<TransfersScreen> {
                 ),
               ),
             ),
+          ),
 
-            // ---------------- EXTRACT COM FILTRO ----------------
-            Extract(
-              uploadImage: true,
-              titleComponent: 'Transferências',
-              startDate: _startDate,
-              endDate: _endDate,
-            ),
-          ],
-        ),
+          // Lista como sliver (sem nested scroll)
+          ExtractSliver(
+            uploadImage: true,
+            titleComponent: 'Transferências',
+            startDate: _startDate,
+            endDate: _endDate,
+            limit: _limit,
+          ),
+        ],
       ),
       drawer: Drawer(
         child: ListView(
