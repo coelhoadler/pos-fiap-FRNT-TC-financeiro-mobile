@@ -134,9 +134,6 @@ class _BalanceState extends State<Balance> {
                             fontWeight: FontWeight.w600,
                             fontSize: 22,
                             color: Colors.white,
-                            decoration: _obscure
-                                ? TextDecoration.lineThrough
-                                : null,
                           ),
                         );
                       }
@@ -147,9 +144,6 @@ class _BalanceState extends State<Balance> {
                             fontWeight: FontWeight.w600,
                             fontSize: 22,
                             color: Colors.white,
-                            decoration: _obscure
-                                ? TextDecoration.lineThrough
-                                : null,
                           ),
                         );
                       }
@@ -170,9 +164,6 @@ class _BalanceState extends State<Balance> {
                           fontWeight: FontWeight.w600,
                           fontSize: 22,
                           color: Colors.white,
-                          decoration: _obscure
-                              ? TextDecoration.lineThrough
-                              : null,
                         ),
                       );
                     },

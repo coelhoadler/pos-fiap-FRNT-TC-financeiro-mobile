@@ -29,6 +29,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Ensure the view resizes when the keyboard appears
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         backgroundColor: Color(0xFF004d61),
         titleTextStyle: TextStyle(color: Colors.white, fontSize: 24),
@@ -37,121 +39,152 @@ class _RegisterScreenState extends State<RegisterScreen> {
         toolbarHeight: 60,
         iconTheme: IconThemeData(color: Colors.white, size: 25),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              SvgPicture.asset('lib/assets/svg/logo-bytebank.svg', height: 50),
-              SizedBox(height: 50),
-              TextFormField(
-                controller: _nameController,
-                style: TextStyle(fontSize: 16, color: Color(0xFF004d61)),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Informe seu nome';
-                  }
-                  return null;
-                },
-                decoration: const InputDecoration(
-                  labelText: 'Qual o seu nome? ',
-                  hintText: 'Digite seu nome',
-                  labelStyle: TextStyle(
-                    color: Color(0xFF004d61),
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFF004d61)),
-                  ),
-                  hintStyle: TextStyle(
-                    color: Color(0xFF004d61),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              // Add bottom padding equal to the keyboard height to keep the
+              // focused field visible when the keyboard opens
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
               ),
-              SizedBox(height: 15),
-              TextFormField(
-                controller: _emailController,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Informe o e-mail';
-                  }
-                  final email = value.trim();
-                  final emailRegex = RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-                  if (!emailRegex.hasMatch(email)) {
-                    return 'E-mail inválido';
-                  }
-                  return null;
-                },
-                decoration: const InputDecoration(
-                  labelText: 'E-mail *',
-                  labelStyle: TextStyle(
-                    color: Color(0xFF004d61),
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  focusedBorder: UnderlineInputBorder(
-                    borderSide: BorderSide(color: Color(0xFF004d61)),
-                  ),
-                  hintStyle: TextStyle(
-                    color: Color(0xFF004d61),
-                    fontSize: 13,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-                style: TextStyle(fontSize: 16, color: Color(0xFF004d61)),
-              ),
-              SizedBox(height: 15),
-              PasswordInput(
-                controller: _passwordController,
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Informe a senha';
-                  }
-                  if (value.trim().length < 6) {
-                    return 'A senha deve ter pelo menos 6 caracteres';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 30),
-              if (_errorMessage.isNotEmpty)
-                Center(
-                  child: Text(
-                    _errorMessage,
-                    style: TextStyle(color: Colors.red),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              const SizedBox(height: 30),
-              _isLoading
-                  ? CircularProgressIndicator(color: Color(0xFF004d61))
-                  : ElevatedButton(
-                      onPressed: _onSubmit,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFF004d61),
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        SvgPicture.asset(
+                          'lib/assets/svg/logo-bytebank.svg',
+                          height: 50,
                         ),
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 50,
-                          vertical: 12,
+                        SizedBox(height: 50),
+                        TextFormField(
+                          controller: _nameController,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Color(0xFF004d61),
+                          ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Informe seu nome';
+                            }
+                            return null;
+                          },
+                          decoration: const InputDecoration(
+                            labelText: 'Qual o seu nome? ',
+                            hintText: 'Digite seu nome',
+                            labelStyle: TextStyle(
+                              color: Color(0xFF004d61),
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            focusedBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: Color(0xFF004d61)),
+                            ),
+                            hintStyle: TextStyle(
+                              color: Color(0xFF004d61),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
                         ),
-                        textStyle: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
+                        SizedBox(height: 15),
+                        TextFormField(
+                          controller: _emailController,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Informe o e-mail';
+                            }
+                            final email = value.trim();
+                            final emailRegex = RegExp(
+                              r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+                            );
+                            if (!emailRegex.hasMatch(email)) {
+                              return 'E-mail inválido';
+                            }
+                            return null;
+                          },
+                          decoration: const InputDecoration(
+                            labelText: 'E-mail *',
+                            labelStyle: TextStyle(
+                              color: Color(0xFF004d61),
+                              fontSize: 18,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            focusedBorder: UnderlineInputBorder(
+                              borderSide: BorderSide(color: Color(0xFF004d61)),
+                            ),
+                            hintStyle: TextStyle(
+                              color: Color(0xFF004d61),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Color(0xFF004d61),
+                          ),
                         ),
-                      ),
-                      child: Text('Criar minha conta'),
+                        SizedBox(height: 15),
+                        PasswordInput(
+                          controller: _passwordController,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Informe a senha';
+                            }
+                            if (value.trim().length < 6) {
+                              return 'A senha deve ter pelo menos 6 caracteres';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 30),
+                        if (_errorMessage.isNotEmpty)
+                          Center(
+                            child: Text(
+                              _errorMessage,
+                              style: TextStyle(color: Colors.red),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        const SizedBox(height: 30),
+                        _isLoading
+                            ? CircularProgressIndicator(
+                                color: Color(0xFF004d61),
+                              )
+                            : ElevatedButton(
+                                onPressed: _onSubmit,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Color(0xFF004d61),
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(25),
+                                  ),
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 50,
+                                    vertical: 12,
+                                  ),
+                                  textStyle: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                child: Text('Criar minha conta'),
+                              ),
+                      ],
                     ),
-            ],
-          ),
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
@@ -185,7 +218,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       await user?.updateDisplayName(_nameController.text.trim());
 
       await _auth.currentUser?.sendEmailVerification();
-
+      if (!mounted) return;
       Navigator.pop(context, textEmail);
     } on FirebaseAuthException catch (e) {
       setErrorMessage(e.message ?? 'Erro desconhecido');

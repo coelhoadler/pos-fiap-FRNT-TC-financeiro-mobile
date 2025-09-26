@@ -119,6 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         backgroundColor: Color(0xFF004d61),
         titleTextStyle: TextStyle(color: Colors.white, fontSize: 24),
@@ -127,88 +128,104 @@ class _LoginScreenState extends State<LoginScreen> {
         toolbarHeight: 60,
         automaticallyImplyLeading: false,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            SvgPicture.asset('lib/assets/svg/logo-bytebank.svg', height: 50),
-            SizedBox(height: 50),
-            TextFormField(
-              decoration: InputDecoration(
-                labelText: 'E-mail *',
-                labelStyle: TextStyle(
-                  color: Color(0xFF004d61),
-                  fontSize: 18,
-                  fontWeight: FontWeight.w500,
-                ),
-                focusedBorder: UnderlineInputBorder(
-                  borderSide: BorderSide(color: Color(0xFF004d61)),
-                ),
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 16,
               ),
-              style: TextStyle(fontSize: 16, color: Color(0xFF004d61)),
-              controller: _emailController,
-            ),
-            SizedBox(height: 30),
-            PasswordInput(controller: _passwordController),
-            SizedBox(height: 20),
-            if (_errorMessage.isNotEmpty)
-              Center(
-                child: Text(
-                  _errorMessage,
-                  style: TextStyle(color: Colors.red),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            SizedBox(height: 30),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _isLoading
-                    ? CircularProgressIndicator(color: Color(0xFF004d61))
-                    : Row(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: IntrinsicHeight(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: <Widget>[
+                      SvgPicture.asset('lib/assets/svg/logo-bytebank.svg', height: 50),
+                      SizedBox(height: 50),
+                      TextFormField(
+                        decoration: InputDecoration(
+                          labelText: 'E-mail *',
+                          labelStyle: TextStyle(
+                            color: Color(0xFF004d61),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          focusedBorder: UnderlineInputBorder(
+                            borderSide: BorderSide(color: Color(0xFF004d61)),
+                          ),
+                        ),
+                        style: TextStyle(fontSize: 16, color: Color(0xFF004d61)),
+                        controller: _emailController,
+                      ),
+                      SizedBox(height: 30),
+                      PasswordInput(controller: _passwordController),
+                      SizedBox(height: 20),
+                      if (_errorMessage.isNotEmpty)
+                        Center(
+                          child: Text(
+                            _errorMessage,
+                            style: TextStyle(color: Colors.red),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      SizedBox(height: 30),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          ElevatedButton(
-                            onPressed: _login,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Color(0xFF004d61),
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 50,
-                                vertical: 12,
-                              ),
-                              textStyle: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            child: Text('Login'),
-                          ),
-                          SizedBox(width: 20),
-                          ElevatedButton(
-                            onPressed: _goToRegisterRoute,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: Color(0xFF004d61),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(25),
-                              ),
-                              shadowColor: Color(0xFF004d61),
-                              textStyle: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            child: Text('Criar uma conta'),
-                          ),
+                          _isLoading
+                              ? CircularProgressIndicator(color: Color(0xFF004d61))
+                              : Row(
+                                  children: [
+                                    ElevatedButton(
+                                      onPressed: _login,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Color(0xFF004d61),
+                                        foregroundColor: Colors.white,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(25),
+                                        ),
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 50,
+                                          vertical: 12,
+                                        ),
+                                        textStyle: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      child: Text('Login'),
+                                    ),
+                                    SizedBox(width: 20),
+                                    ElevatedButton(
+                                      onPressed: _goToRegisterRoute,
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.white,
+                                        foregroundColor: Color(0xFF004d61),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(25),
+                                        ),
+                                        shadowColor: Color(0xFF004d61),
+                                        textStyle: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      child: Text('Criar uma conta'),
+                                    ),
+                                  ],
+                                ),
                         ],
                       ),
-              ],
-            ),
-          ],
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );
