@@ -62,10 +62,15 @@ class _TransfersScreenState extends State<TransfersScreen> {
       case TransferFilterType.range:
         if (_selectedRange != null) {
           final start = DateTime(
-              _selectedRange!.start.year, _selectedRange!.start.month, _selectedRange!.start.day);
+            _selectedRange!.start.year,
+            _selectedRange!.start.month,
+            _selectedRange!.start.day,
+          );
           final endExclusive = DateTime(
-                  _selectedRange!.end.year, _selectedRange!.end.month, _selectedRange!.end.day)
-              .add(const Duration(days: 1));
+            _selectedRange!.end.year,
+            _selectedRange!.end.month,
+            _selectedRange!.end.day,
+          ).add(const Duration(days: 1));
           setState(() {
             _startDate = start;
             _endDate = endExclusive;
@@ -84,22 +89,31 @@ class _TransfersScreenState extends State<TransfersScreen> {
 
   List<DropdownMenuItem<int>> _monthItems() {
     const months = [
-      'Janeiro','Fevereiro','Março','Abril','Maio','Junho',
-      'Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'
+      'Janeiro',
+      'Fevereiro',
+      'Março',
+      'Abril',
+      'Maio',
+      'Junho',
+      'Julho',
+      'Agosto',
+      'Setembro',
+      'Outubro',
+      'Novembro',
+      'Dezembro',
     ];
     return List.generate(12, (i) {
       final m = i + 1;
-      return DropdownMenuItem<int>(
-        value: m,
-        child: Text('${months[i]} ($m)'),
-      );
+      return DropdownMenuItem<int>(value: m, child: Text('${months[i]} ($m)'));
     });
   }
 
   List<DropdownMenuItem<int>> _yearItems() {
     final current = DateTime.now().year;
     final years = List.generate(6, (i) => current - i);
-    return years.map((y) => DropdownMenuItem<int>(value: y, child: Text(y.toString()))).toList();
+    return years
+        .map((y) => DropdownMenuItem<int>(value: y, child: Text(y.toString())))
+        .toList();
   }
 
   Future<void> _pickRange() async {
@@ -111,7 +125,8 @@ class _TransfersScreenState extends State<TransfersScreen> {
       context: context,
       firstDate: firstDay,
       lastDate: lastDay,
-      initialDateRange: _selectedRange ??
+      initialDateRange:
+          _selectedRange ??
           DateTimeRange(start: DateTime(now.year, now.month, 1), end: now),
       saveText: 'Aplicar',
       helpText: 'Selecione o período',
@@ -154,8 +169,10 @@ class _TransfersScreenState extends State<TransfersScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Filtros do Extrato',
-                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      const Text(
+                        'Filtros do Extrato',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
                       const SizedBox(height: 8),
                       Wrap(
                         spacing: 12,
@@ -233,12 +250,12 @@ class _TransfersScreenState extends State<TransfersScreen> {
                                 _selectedRange == null
                                     ? 'Selecionar período'
                                     : 'Período: '
-                                      '${_selectedRange!.start.day.toString().padLeft(2, '0')}/'
-                                      '${_selectedRange!.start.month.toString().padLeft(2, '0')}/'
-                                      '${_selectedRange!.start.year} → '
-                                      '${_selectedRange!.end.day.toString().padLeft(2, '0')}/'
-                                      '${_selectedRange!.end.month.toString().padLeft(2, '0')}/'
-                                      '${_selectedRange!.end.year}',
+                                          '${_selectedRange!.start.day.toString().padLeft(2, '0')}/'
+                                          '${_selectedRange!.start.month.toString().padLeft(2, '0')}/'
+                                          '${_selectedRange!.start.year} → '
+                                          '${_selectedRange!.end.day.toString().padLeft(2, '0')}/'
+                                          '${_selectedRange!.end.month.toString().padLeft(2, '0')}/'
+                                          '${_selectedRange!.end.year}',
                               ),
                             ),
                           ],
@@ -259,7 +276,7 @@ class _TransfersScreenState extends State<TransfersScreen> {
             // ---------------- EXTRACT COM FILTRO ----------------
             Extract(
               uploadImage: true,
-              titleComponent: 'Transferências',
+              titleComponent: 'Minhas transferências',
               startDate: _startDate,
               endDate: _endDate,
             ),

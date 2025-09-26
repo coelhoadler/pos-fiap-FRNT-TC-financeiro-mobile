@@ -37,6 +37,13 @@ class _ExtractState extends State<Extract> {
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final ImagePicker _picker = ImagePicker();
 
+  final List<DocumentSnapshot<Map<String, dynamic>>> _docs = [];
+  DocumentSnapshot<Map<String, dynamic>>? _lastDoc;
+  bool _hasMore = true;
+  bool _isLoading = false;
+  String? _error;
+  late int _pageSize;
+
   @override
   void initState() {
     super.initState();
@@ -46,22 +53,29 @@ class _ExtractState extends State<Extract> {
         Navigator.pushReplacementNamed(context, Routes.login);
         return;
       }
+      _resetAndFetch();
     });
+
+    _pageSize = widget.limit ?? 5;
   }
 
-  Stream<QuerySnapshot> _getTransactionsStream() {
+  // Reconstrói a query base considerando filtros e ordenação
+  Query<Map<String, dynamic>> _baseQuery() {
     final user = _auth.currentUser;
     if (user == null) {
-      return const Stream.empty();
+      // Retorna uma referência qualquer; o chamador deve checar usuário antes de usar.
+      return _firestore
+          .collection('users')
+          .doc('none')
+          .collection('transacoes');
     }
 
-    final base = _firestore
+    Query<Map<String, dynamic>> q = _firestore
         .collection('users')
         .doc(user.uid)
         .collection('transacoes')
-        .limit(widget.limit ?? 20);
-
-    Query q = base;
+        .orderBy('data', descending: true)
+        .limit(8);
 
     // Aplica filtros de período, se vieram do Dashboard
     if (widget.startDate != null) {
@@ -71,10 +85,76 @@ class _ExtractState extends State<Extract> {
       q = q.where('data', isLessThan: widget.endDate);
     }
 
-    // Ordenação (depois dos where)
-    q = q.orderBy('data', descending: true);
+    return q;
+  }
 
-    return q.snapshots();
+  Future<void> _resetAndFetch() async {
+    setState(() {
+      _docs.clear();
+      _lastDoc = null;
+      _hasMore = true;
+      _error = null;
+      _isLoading = true; // evita flicker do estado vazio antes do primeiro load
+    });
+
+    await _fetchNextPage();
+  }
+
+  Future<void> _fetchNextPage() async {
+    if (_auth.currentUser == null) return;
+
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      Query<Map<String, dynamic>> q = _baseQuery().limit(_pageSize);
+      if (_lastDoc != null) {
+        q = q.startAfterDocument(_lastDoc!);
+      }
+
+      final snapshot = await q.get();
+      if (snapshot.docs.isNotEmpty) {
+        if (mounted) {
+          setState(() {
+            _docs.addAll(snapshot.docs);
+            _lastDoc = snapshot.docs.last;
+            if (snapshot.docs.length < _pageSize) {
+              _hasMore = false;
+            }
+          });
+        }
+      } else {
+        setState(() {
+          _hasMore = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant Extract oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final limitChanged = (oldWidget.limit ?? 5) != (widget.limit ?? 5);
+    final startChanged = oldWidget.startDate != widget.startDate;
+    final endChanged = oldWidget.endDate != widget.endDate;
+    if (limitChanged) {
+      _pageSize = widget.limit ?? 5;
+    }
+    if (limitChanged || startChanged || endChanged) {
+      _resetAndFetch();
+    }
   }
 
   void _pickImage({required DocumentSnapshot currentTransfer}) async {
@@ -99,13 +179,18 @@ class _ExtractState extends State<Extract> {
 
       await FirebaseStorage.instance.ref('uploads/$fileName').putFile(file);
 
-      ToastUtil.showToast(context, 'O upload da imagem foi concluído.');
+      if (mounted) {
+        ToastUtil.showToast(context, 'O upload da imagem foi concluído.');
+      }
+      _resetAndFetch();
     } catch (e) {
-      ToastUtil.showToast(context, 'Erro ao realizar upload da imagem.');
+      if (mounted) {
+        ToastUtil.showToast(context, 'Erro ao realizar upload da imagem.');
+      }
     }
   }
 
-  _goToImageGallery(String? transactionId, String imagePathUrl) {
+  void _goToImageGallery(String? transactionId, String imagePathUrl) {
     Navigator.pushNamed(
       context,
       Routes.imageGallery,
@@ -116,8 +201,12 @@ class _ExtractState extends State<Extract> {
     );
   }
 
-  Widget _buildTransactionsList(QuerySnapshot snapshot) {
-    if (snapshot.docs.isEmpty) {
+  Widget _buildTransactionsList() {
+    if (_docs.isEmpty && _isLoading) {
+      return _buildLoadingState();
+    }
+
+    if (_docs.isEmpty) {
       return Padding(
         padding: const EdgeInsets.all(16.0),
         child: Text(
@@ -130,9 +219,9 @@ class _ExtractState extends State<Extract> {
     return ListView.builder(
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
-      itemCount: snapshot.docs.length,
+      itemCount: _docs.length,
       itemBuilder: (context, index) {
-        return _buildTransactionItem(snapshot.docs[index]);
+        return _buildTransactionItem(_docs[index]);
       },
     );
   }
@@ -252,6 +341,12 @@ class _ExtractState extends State<Extract> {
             style: TextStyle(fontSize: 14, color: Colors.grey[600]),
             textAlign: TextAlign.center,
           ),
+          const SizedBox(height: 8),
+          ElevatedButton.icon(
+            onPressed: _resetAndFetch,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Tentar novamente'),
+          ),
         ],
       ),
     );
@@ -295,6 +390,10 @@ class _ExtractState extends State<Extract> {
 
       if (mounted) {
         ToastUtil.showToast(context, 'Transação excluída com sucesso.');
+        // Remove localmente para manter a lista consistente
+        setState(() {
+          _docs.removeWhere((d) => d.id == id);
+        });
       }
     }
   }
@@ -430,21 +529,33 @@ class _ExtractState extends State<Extract> {
                   ),
                 ],
               ),
+              if (_error != null) _buildErrorState(_error!),
+              if (_error == null) _buildTransactionsList(),
 
-              StreamBuilder<QuerySnapshot>(
-                stream: _getTransactionsStream(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasError) {
-                    return _buildErrorState(snapshot.error.toString());
-                  }
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return _buildLoadingState();
-                  }
-                  if (!snapshot.hasData) {
-                    return _buildErrorState('Dados não disponíveis');
-                  }
-                  return _buildTransactionsList(snapshot.data!);
-                },
+              // Footer de paginação
+              Padding(
+                padding: const EdgeInsets.only(top: 0, bottom: 8.0),
+                child: Column(
+                  children: [
+                    if (!_isLoading &&
+                        _hasMore &&
+                        _error == null &&
+                        widget.limit == null)
+                      TextButton.icon(
+                        onPressed: _fetchNextPage,
+                        icon: const Icon(Icons.expand_more),
+                        label: const Text('Carregar mais'),
+                      ),
+                    if (!_hasMore && _docs.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4.0, bottom: 8.0),
+                        child: Text(
+                          'Fim do extrato',
+                          style: TextStyle(color: Colors.grey[600]),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ],
           ),

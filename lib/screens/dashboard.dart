@@ -96,13 +96,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
             if (hasTransactions)
               TransactionsPieChart(transactionsData: transactionsData),
             NewTransferScreen(),
-            Extract(titleComponent: 'Extrato', limit: extractLimit),
+            Extract(
+              titleComponent: 'Últimas transferências',
+              limit: extractLimit,
+            ),
             if (transactionsData.isNotEmpty)
               TextButton(
                 onPressed: () {
                   Navigator.pushNamed(context, Routes.transfers);
                 },
-                child: Text('Listar todas as transações'),
+                child: Text('Listar todas as transferências'),
               ),
             SizedBox(height: 15),
           ],
