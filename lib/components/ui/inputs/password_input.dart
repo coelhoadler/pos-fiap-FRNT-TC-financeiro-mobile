@@ -4,12 +4,14 @@ class PasswordInput extends StatefulWidget {
   final TextEditingController controller;
   final String? label;
   final String? hint;
+  final String? Function(String?)? validator;
 
   const PasswordInput({
     super.key,
     required this.controller,
     this.label,
     this.hint,
+    this.validator,
   });
 
   @override
@@ -24,6 +26,7 @@ class _PasswordInputState extends State<PasswordInput> {
     return TextFormField(
       controller: widget.controller,
       obscureText: _obscure,
+      validator: widget.validator,
       style: TextStyle(fontSize: 16, color: Color(0xFF004d61)),
       decoration: InputDecoration(
         labelText: widget.label ?? 'Senha *',
@@ -33,7 +36,7 @@ class _PasswordInputState extends State<PasswordInput> {
           fontWeight: FontWeight.w500,
         ),
         focusedBorder: UnderlineInputBorder(
-          borderSide: BorderSide(color: Color(0xFF004d61)), 
+          borderSide: BorderSide(color: Color(0xFF004d61)),
         ),
         hintText: widget.hint,
         suffixIcon: IconButton(
