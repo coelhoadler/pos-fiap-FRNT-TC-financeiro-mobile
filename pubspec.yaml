@@ -44,8 +44,15 @@ dependencies:
   collection: ^1.19.1
 
 dev_dependencies:
+  icons_launcher: ^3.0.3
   flutter_test:
     sdk: flutter
+
+icons_launcher:
+  image_path: 'assets/icon/ic_logo.png'
+  platforms:
+    android:
+      enable: true    
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

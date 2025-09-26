@@ -33,7 +33,7 @@ class _ImageGalleryScreenState extends State<ImageGalleryScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Excluir imagem'),
-        content: const Text('Tem certeza que deseja excluir esta imagem?'),
+        content: Text('Tem certeza que deseja excluir esta imagem?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -41,7 +41,7 @@ class _ImageGalleryScreenState extends State<ImageGalleryScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Excluir'),
+            child: Text('Excluir'),
           ),
         ],
       ),
@@ -52,7 +52,7 @@ class _ImageGalleryScreenState extends State<ImageGalleryScreen> {
     }
   }
 
-  _clearUploadedImage() async {
+  Future<void> _clearUploadedImage() async {
     String? id = _auth.currentUser?.uid;
     await _firestore
         .collection('users')
@@ -62,8 +62,10 @@ class _ImageGalleryScreenState extends State<ImageGalleryScreen> {
         .update({'imagePathUrl': null});
     await _storage.ref(widget.imagePathUrl).delete();
 
-    ToastUtil.showToast(context, 'Imagem deletada com sucesso.');
-    Navigator.pop(context);
+    if (mounted) {
+      ToastUtil.showToast(context, 'Imagem deletada com sucesso.');
+      Navigator.pop(context);
+    }
   }
 
   @override

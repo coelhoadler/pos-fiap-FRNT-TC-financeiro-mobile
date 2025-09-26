@@ -59,6 +59,15 @@ class _LoginScreenState extends State<LoginScreen> {
       _isLoading = true;
     });
     try {
+      if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+        setErrorMessage("Preencha todos os campos corretamente.");
+        return;
+      } else if (!_emailController.text.contains('@') ||
+          !_emailController.text.contains('.')) {
+        setErrorMessage("Preencha todos os campos corretamente.");
+        return;
+      }
+
       await _auth.signInWithEmailAndPassword(
         email: _emailController.text,
         password: _passwordController.text,
@@ -84,7 +93,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _loadCredentials() async {
-    // Read the same key used when saving (login)
     String? email = await _flutterStorage.read(key: 'login');
     String? senha = await _flutterStorage.read(key: 'senha');
 
