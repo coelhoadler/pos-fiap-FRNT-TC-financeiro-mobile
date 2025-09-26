@@ -34,7 +34,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         titleTextStyle: TextStyle(color: Colors.white, fontSize: 24),
         centerTitle: true,
         title: Text('Criar uma conta'),
-        toolbarHeight: 100,
+        toolbarHeight: 60,
         iconTheme: IconThemeData(color: Colors.white, size: 25),
       ),
       body: Padding(
