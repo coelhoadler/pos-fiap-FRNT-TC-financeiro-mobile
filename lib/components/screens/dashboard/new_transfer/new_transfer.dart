@@ -59,8 +59,10 @@ class _NewTransferScreenState extends State<NewTransferScreen> {
             'imagePathUrl': null,
           });
 
-      FocusScope.of(context).unfocus();
-      ToastUtil.showToast(context, 'Transação criada com sucesso.');
+      if (mounted) {
+        FocusScope.of(context).unfocus();
+        ToastUtil.showToast(context, 'Transação criada com sucesso.');
+      }
 
       setState(() {
         selectedValue = '';
