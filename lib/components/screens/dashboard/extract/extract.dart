@@ -385,7 +385,16 @@ class _ExtractState extends State<Extract> {
           .delete();
 
       if (imagePathUrl.isNotEmpty) {
-        await _storage.ref(imagePathUrl).delete();
+        try {
+          await _storage.ref(imagePathUrl).delete();
+        } catch (e) {
+          if (mounted) {
+            ToastUtil.showToast(
+              context,
+              'Erro ao excluir imagem associada: $e',
+            );
+          }
+        }
       }
 
       if (mounted) {
