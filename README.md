@@ -12,10 +12,9 @@ Aplicativo Flutter desenvolvido para gerenciar transações financeiras pessoais
 
 ## 📦 Requisitos
 
-- Flutter SDK instalado e configurado
-- Dart SDK >= 3.8.1
-- Conta Firebase com projeto configurado
 - Android Studio ou VS Code com plugins Flutter/Dart
+- Dart SDK >= 3.8.1
+- Flutter SDK instalado e configurado
 
 ## 🚀 Instalação e Execução
 
