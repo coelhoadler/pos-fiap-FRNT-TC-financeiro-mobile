@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:pos_fiap_fin_mobile/components/screens/dashboard/charts/pie/pie_chart.dart';
 import 'package:pos_fiap_fin_mobile/components/screens/dashboard/new_transfer/new_transfer.dart';
 import 'package:pos_fiap_fin_mobile/components/ui/firebase_logout_util.dart';
+import 'package:pos_fiap_fin_mobile/components/ui/header/avatar-header.dart';
 import 'package:pos_fiap_fin_mobile/components/ui/header/header.dart';
 import 'package:pos_fiap_fin_mobile/utils/routes.dart';
 
@@ -39,6 +40,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _getAllTransactions() {
+    if (_auth.currentUser == null) return;
+
     _firestore
         .collection('users')
         .doc(_auth.currentUser!.uid)
@@ -65,10 +68,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             DrawerHeader(
               decoration: const BoxDecoration(color: Color(0xFF004D61)),
-              child: Text(
-                _auth.currentUser?.displayName ?? 'Usuário',
-                style: const TextStyle(color: Colors.white, fontSize: 24),
-              ),
+              child: AvatarHeader(),
             ),
             ListTile(
               leading: const Icon(Icons.account_balance),
@@ -82,7 +82,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
               leading: const Icon(Icons.logout),
               title: const Text('Sair'),
               onTap: () async {
-                FirebaseLogoutUtil.logout(context);
+                try {
+                  FirebaseLogoutUtil.logout(context);
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(SnackBar(content: Text('Erro ao sair: $e')));
+                  }
+                }
               },
             ),
           ],

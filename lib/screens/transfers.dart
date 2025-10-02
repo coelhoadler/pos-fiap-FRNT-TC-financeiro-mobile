@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pos_fiap_fin_mobile/components/ui/firebase_logout_util.dart';
+import 'package:pos_fiap_fin_mobile/components/ui/header/avatar-header.dart';
 import '../components/screens/dashboard/extract/extract.dart';
 import '../components/ui/header/header.dart' show Header;
 import 'package:firebase_auth/firebase_auth.dart';
@@ -289,10 +290,7 @@ class _TransfersScreenState extends State<TransfersScreen> {
           children: [
             DrawerHeader(
               decoration: const BoxDecoration(color: Color(0xFF004D61)),
-              child: Text(
-                _auth.currentUser?.displayName ?? 'Usuário',
-                style: const TextStyle(color: Colors.white, fontSize: 24),
-              ),
+              child: AvatarHeader(),
             ),
             ListTile(
               leading: const Icon(Icons.home),

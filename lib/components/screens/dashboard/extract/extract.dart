@@ -36,6 +36,7 @@ class _ExtractState extends State<Extract> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
   final ImagePicker _picker = ImagePicker();
+  final Map<String, double> _uploadProgress = {};
 
   final List<DocumentSnapshot<Map<String, dynamic>>> _docs = [];
   DocumentSnapshot<Map<String, dynamic>>? _lastDoc;
@@ -170,14 +171,33 @@ class _ExtractState extends State<Extract> {
       String fileName = file.path.split('/').last;
 
       final userId = _auth.currentUser!.uid;
+
+      // Inicia estado de progresso
+      setState(() {
+        _uploadProgress[id] = 0.0;
+      });
+
+      final ref = FirebaseStorage.instance.ref('uploads/$fileName');
+      final uploadTask = ref.putFile(file);
+
+      // Escuta progresso
+      uploadTask.snapshotEvents.listen((snapshot) {
+        if (!mounted) return;
+        final total = snapshot.totalBytes == 0 ? 1 : snapshot.totalBytes;
+        setState(() {
+          _uploadProgress[id] = snapshot.bytesTransferred / total; // 0.0 .. 1.0
+        });
+      });
+
+      // Aguarda finalizar
+      await uploadTask;
+
       await _firestore
           .collection('users')
           .doc(userId)
           .collection('transacoes')
           .doc(id)
           .update({'imagePathUrl': 'uploads/$fileName'});
-
-      await FirebaseStorage.instance.ref('uploads/$fileName').putFile(file);
 
       if (mounted) {
         ToastUtil.showToast(context, 'O upload da imagem foi concluído.');
@@ -186,6 +206,12 @@ class _ExtractState extends State<Extract> {
     } catch (e) {
       if (mounted) {
         ToastUtil.showToast(context, 'Erro ao realizar upload da imagem.');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _uploadProgress.remove(id);
+        });
       }
     }
   }
@@ -235,57 +261,87 @@ class _ExtractState extends State<Extract> {
       final valorFmt = FormatValorUtil.formatValor(dados['valor']);
       final dataFmt = FormatDateUtil.formatDate(dados['data']);
 
-      return ListTile(
-        contentPadding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 10.0),
-        titleAlignment: ListTileTitleAlignment.top,
-        leading: const Icon(
-          Icons.receipt_long,
-          color: Color(0xFF004d61),
-          size: 25,
-        ),
+      final bool isUploading = _uploadProgress.containsKey(transactionId);
+      final double? progressValue = _uploadProgress[transactionId];
 
-        title: Text(
-          descricao.isEmpty ? 'Sem descrição' : descricao,
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-          overflow: TextOverflow.ellipsis,
-        ),
+      return Opacity(
+        opacity: isUploading ? 0.7 : 1.0,
+        child: ListTile(
+          contentPadding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 10.0),
+          titleAlignment: ListTileTitleAlignment.top,
+          leading: const Icon(
+            Icons.receipt_long,
+            color: Color(0xFF004d61),
+            size: 25,
+          ),
 
-        subtitle: Text(
-          '$dataFmt\n$valorFmt',
-          style: const TextStyle(color: Colors.black, fontSize: 14),
-        ),
+          title: Text(
+            descricao.isEmpty ? 'Sem descrição' : descricao,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            overflow: TextOverflow.ellipsis,
+          ),
 
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.edit, color: Color(0xFF004d61)),
-              tooltip: 'Editar',
-              onPressed: () => _editarTransacao(doc.id, dados),
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete, color: Colors.redAccent),
-              tooltip: 'Excluir',
-              onPressed: () => _confirmarExcluirTransacao(doc.id, imagePathUrl),
-            ),
-            if (widget.uploadImage)
-              IconButton(
-                style: ButtonStyle(
-                  iconColor: WidgetStateProperty.all(
-                    imagePathUrl.isNotEmpty ? Colors.blueAccent : Colors.green,
+          subtitle: Text(
+            '$dataFmt\n$valorFmt',
+            style: const TextStyle(color: Colors.black, fontSize: 14),
+          ),
+
+          trailing: isUploading
+              ? SizedBox(
+                  width: 42,
+                  height: 42,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      CircularProgressIndicator(
+                        strokeWidth: 3,
+                        value: progressValue == 0 || progressValue == 1
+                            ? null
+                            : progressValue,
+                      ),
+                      const Icon(
+                        Icons.cloud_upload,
+                        size: 18,
+                        color: Colors.grey,
+                      ),
+                    ],
                   ),
+                )
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit, color: Color(0xFF004d61)),
+                      tooltip: 'Editar',
+                      onPressed: () => _editarTransacao(doc.id, dados),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.redAccent),
+                      tooltip: 'Excluir',
+                      onPressed: () =>
+                          _confirmarExcluirTransacao(doc.id, imagePathUrl),
+                    ),
+                    if (widget.uploadImage)
+                      IconButton(
+                        style: ButtonStyle(
+                          iconColor: WidgetStateProperty.all(
+                            imagePathUrl.isNotEmpty
+                                ? Colors.blueAccent
+                                : Colors.green,
+                          ),
+                        ),
+                        onPressed: () => imagePathUrl.isNotEmpty
+                            ? _goToImageGallery(transactionId, imagePathUrl)
+                            : _pickImage(currentTransfer: doc),
+                        icon: Icon(
+                          imagePathUrl.isNotEmpty ? Icons.image : Icons.upload,
+                        ),
+                        tooltip: imagePathUrl.isNotEmpty
+                            ? 'Visualizar imagem'
+                            : 'Enviar imagem',
+                      ),
+                  ],
                 ),
-                onPressed: () => imagePathUrl.isNotEmpty
-                    ? _goToImageGallery(transactionId, imagePathUrl)
-                    : _pickImage(currentTransfer: doc),
-                icon: Icon(
-                  imagePathUrl.isNotEmpty ? Icons.image : Icons.upload,
-                ),
-                tooltip: imagePathUrl.isNotEmpty
-                    ? 'Visualizar imagem'
-                    : 'Enviar imagem',
-              ),
-          ],
         ),
       );
     } catch (e) {
@@ -385,7 +441,16 @@ class _ExtractState extends State<Extract> {
           .delete();
 
       if (imagePathUrl.isNotEmpty) {
-        await _storage.ref(imagePathUrl).delete();
+        try {
+          await _storage.ref(imagePathUrl).delete();
+        } catch (e) {
+          if (mounted) {
+            ToastUtil.showToast(
+              context,
+              'Erro ao excluir imagem associada: $e',
+            );
+          }
+        }
       }
 
       if (mounted) {
@@ -546,7 +611,7 @@ class _ExtractState extends State<Extract> {
                         icon: const Icon(Icons.expand_more),
                         label: const Text('Carregar mais'),
                       ),
-                    if (!_hasMore && _docs.isNotEmpty)
+                    if (!_hasMore && _docs.isNotEmpty && widget.limit == null)
                       Padding(
                         padding: const EdgeInsets.only(top: 4.0, bottom: 8.0),
                         child: Text(
