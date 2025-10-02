@@ -60,6 +60,7 @@ class _ImageGalleryScreenState extends State<ImageGalleryScreen> {
         .collection('transacoes')
         .doc(widget.transactionId)
         .update({'imagePathUrl': null});
+
     await _storage.ref(widget.imagePathUrl).delete();
 
     if (mounted) {
